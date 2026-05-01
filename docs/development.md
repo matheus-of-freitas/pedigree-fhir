@@ -35,6 +35,9 @@ Run all commands from the repo root unless noted otherwise.
 | `pnpm run typecheck` | Type-check all workspace projects |
 | `pnpm run test` | Run package tests |
 | `pnpm run test:coverage` | Run package tests with coverage |
+| `pnpm run mutation` | Run the opt-in mutation workflow for both packages |
+| `pnpm run mutation:core` | Run Stryker against `@pedigree/core` |
+| `pnpm run mutation:react` | Run Stryker against `@pedigree/react` |
 | `pnpm run build` | Build the publishable packages |
 | `pnpm run e2e` | Run Playwright flow and visual suites |
 | `pnpm run e2e:update` | Refresh Playwright visual baselines |
@@ -63,6 +66,17 @@ Practical implications:
 - new package code should arrive with tests
 - defensive branches should only be excluded with explicit justification
 - coverage erosion is treated as a correctness problem, not just a reporting issue
+
+## Mutation testing
+
+Mutation testing is available as a **manual investigation workflow** on top of the normal 100% coverage gate.
+
+- `pnpm run mutation` runs both package mutation suites in sequence
+- `pnpm run mutation:core` and `pnpm run mutation:react` let you focus on one package at a time
+- package-level Stryker configs live in `packages/core/stryker.config.json` and `packages/react/stryker.config.json`
+- local Stryker output is ignored from git via `reports/mutation` and `stryker-tmp`
+
+This workflow is intentionally **not** part of the main CI pipeline yet. The first goal is to prove that the extra runtime yields useful signal beyond the existing Vitest + Playwright verification stack.
 
 ## CI surface
 

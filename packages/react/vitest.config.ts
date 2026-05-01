@@ -1,12 +1,14 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
-const here = fileURLToPath(new URL('.', import.meta.url));
+const coreSourceEntry = fileURLToPath(
+  new URL('./node_modules/@pedigree/core/src/index.ts', import.meta.url),
+);
 
 export default defineConfig({
   resolve: {
     alias: {
-      '@pedigree/core': `${here}../core/src/index.ts`,
+      '@pedigree/core': coreSourceEntry,
     },
   },
   test: {

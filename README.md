@@ -77,6 +77,7 @@ pnpm install
 | `pnpm run typecheck` | Type-check all workspace projects |
 | `pnpm run test` | Run package Vitest suites |
 | `pnpm run test:coverage` | Run package tests with coverage |
+| `pnpm run mutation` | Run the opt-in Stryker mutation workflow for both packages |
 | `pnpm run build` | Build `@pedigree/core` and `@pedigree/react` |
 | `pnpm run e2e` | Run Playwright flow + visual tests |
 | `pnpm -F @pedigree/demo dev` | Start the demo app |
@@ -92,6 +93,8 @@ The repo treats documentation and verification as first-class concerns. The curr
 4. package builds
 5. Storybook build
 6. Playwright flow and visual tests
+
+Mutation testing is available as a **local, opt-in investigation workflow** via Stryker. It is intentionally separate from the main CI gate until its runtime and signal justify promotion.
 
 See [.github/workflows/ci.yml](.github/workflows/ci.yml) and [Development](docs/development.md) for details.
 

@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "plugins": ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
+  "testRunner": "vitest",
+  "checkers": ["typescript"],
+  "tsconfigFile": "tsconfig.json",
+  "reporters": ["progress", "clear-text", "html"],
+  "tempDirName": "stryker-tmp",
+  "mutate": ["src/**/*.{ts,tsx}", "!src/index.ts"],
+  "vitest": {
+    "configFile": "vitest.config.ts",
+    "dir": ".",
+    "related": false
+  }
+}
