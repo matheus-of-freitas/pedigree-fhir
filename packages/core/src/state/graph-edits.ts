@@ -1,3 +1,4 @@
+import { findCoupleOf } from '../model/couples.js';
 import { makeCoupleId } from '../model/ids.js';
 import {
   type Couple,
@@ -63,23 +64,6 @@ function oppositeSex(sex: Sex): Sex {
   if (sex === Sex.Male) return Sex.Female;
   if (sex === Sex.Female) return Sex.Male;
   return Sex.Unknown;
-}
-
-/**
- * Find an existing couple (`Record<CoupleId, Couple>`) where `id` is one of
- * the partners. Returns the couple ID and the other partner's ID, or
- * `undefined` if `id` has no couple yet.
- */
-function findCoupleOf(
-  couples: Record<CoupleId, Couple>,
-  id: IndividualId,
-): { coupleId: CoupleId; partnerId: IndividualId } | undefined {
-  for (const [coupleId, couple] of Object.entries(couples)) {
-    const [a, b] = couple.partners;
-    if (a === id) return { coupleId, partnerId: b };
-    if (b === id) return { coupleId, partnerId: a };
-  }
-  return undefined;
 }
 
 /**

@@ -99,7 +99,9 @@ This split is deliberate: parsing handles explicit source data, while inference 
 - `parentDrops`: sibship drop geometry and twin-junction metadata
 - `bounds`: overall chart bounds
 
-That geometry is what downstream renderers consume.
+That geometry is what downstream renderers consume. The current layout is still
+proband-centered, but it now supports visible descendant rows for gen-0 couples
+in addition to the ancestor structure above the proband.
 
 ## Store and edits
 

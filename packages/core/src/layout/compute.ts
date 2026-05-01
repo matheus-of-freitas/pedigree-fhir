@@ -1,3 +1,4 @@
+import { findCoupleOf } from '../model/couples.js';
 import type { Couple, CoupleId, Individual, IndividualId, PedigreeGraph } from '../model/types.js';
 import { Sex, TwinType } from '../psc/semantics.js';
 import {
@@ -136,6 +137,68 @@ function placeAnchoredRow(
     const x = side === 'others-left' ? anchorX - offset : anchorX + offset;
     positions.set(id, { x, y });
   });
+}
+
+function partnerSide(index: number, total: number): 'left' | 'right' {
+  return index < (total - 1) / 2 ? 'left' : 'right';
+}
+
+function layoutGenerationZero(args: {
+  graph: PedigreeGraph;
+  sibship: readonly IndividualId[];
+  y: number;
+  positions: Map<IndividualId, Point>;
+  opts: Required<Omit<LayoutOptions, 'hideAuntsUncles'>>;
+}): readonly CoupleId[] {
+  const siblingIds = new Set(args.sibship);
+  const slotIds: IndividualId[] = [];
+  const gaps: number[] = [];
+  const visibleCouples: CoupleId[] = [];
+
+  function pushSlot(id: IndividualId, gapFromPrevious: number): void {
+    if (slotIds.length > 0) gaps.push(gapFromPrevious);
+    slotIds.push(id);
+  }
+
+  args.sibship.forEach((id, index) => {
+    const existingCouple = findCoupleOf(args.graph.couples, id);
+    const externalPartner =
+      existingCouple !== undefined && !siblingIds.has(existingCouple.partnerId)
+        ? existingCouple
+        : undefined;
+
+    if (externalPartner === undefined) {
+      pushSlot(id, args.opts.siblingPitch);
+      return;
+    }
+
+    visibleCouples.push(externalPartner.coupleId);
+    if (partnerSide(index, args.sibship.length) === 'left') {
+      pushSlot(externalPartner.partnerId, args.opts.siblingPitch);
+      pushSlot(id, args.opts.couplePitch);
+      return;
+    }
+
+    pushSlot(id, args.opts.siblingPitch);
+    pushSlot(externalPartner.partnerId, args.opts.couplePitch);
+  });
+
+  let x = 0;
+  for (const [index, id] of slotIds.entries()) {
+    if (index > 0) x += gaps[index - 1] as number;
+    args.positions.set(id, { x, y: args.y });
+  }
+
+  const center = meanX(args.positions, args.sibship);
+  for (const id of slotIds) {
+    const point = args.positions.get(id);
+    // Defensive: slot IDs are written into `positions` immediately above.
+    /* v8 ignore next */
+    if (point === undefined) continue;
+    args.positions.set(id, { x: point.x - center, y: args.y });
+  }
+
+  return visibleCouples;
 }
 
 function buildPartnerEdge(
@@ -394,18 +457,19 @@ function layoutGrandparentSide(args: {
 }
 
 /**
- * Compute layout coordinates and connector path strings for a 3-generation
+ * Compute layout coordinates and connector path strings for a proband-centered
  * pedigree. The library is headless: this function returns positions and SVG
  * path strings; consumers render their own shapes.
  *
- * Coordinate convention: y increases downward (so gen -2 is at small y, gen
- * 0 at large y), x is centred around 0 — translate to your viewport as
- * desired, then derive `viewBox` from `bounds`.
+ * Coordinate convention: y increases downward (so ancestors have smaller y and
+ * descendants have larger y), x is centred around the proband sibship —
+ * translate to your viewport as desired, then derive `viewBox` from `bounds`.
  *
  * Layout shape, top-down:
  *   - Gen -2 (y = 0):                MGM─MGF                  PGM─PGF
  *   - Gen -1 (y = generationGap):    [MAUNT … MOTHER]══[FATHER … PUNCLE]
- *   - Gen  0 (y = 2·generationGap):           [SIS PROBAND BRO]
+ *   - Gen  0 (y = 2·generationGap):   [PARTNER] PROBAND [BRO/SIS] [PARTNER]
+ *   - Gen +1 (y = 3·generationGap):           [CHILDREN OF GEN 0 COUPLES]
  */
 export function computePedigreeLayout(
   rawGraph: PedigreeGraph,
@@ -424,6 +488,7 @@ export function computePedigreeLayout(
   const Y0 = 2 * opts.generationGap;
   const Y1 = opts.generationGap;
   const Y2 = 0;
+  const YD = 3 * opts.generationGap;
 
   // Gen 0: proband + siblings (those sharing proband.childOf).
   const probandSibship =
@@ -435,7 +500,48 @@ export function computePedigreeLayout(
   // sure the proband is part of the row regardless.
   /* v8 ignore next */
   if (!probandSibship.includes(graph.proband)) probandSibship.unshift(graph.proband);
-  placeRowCentered(positions, probandSibship, 0, Y0, opts.siblingPitch);
+  const visibleGenerationZeroCouples = layoutGenerationZero({
+    graph,
+    sibship: probandSibship,
+    y: Y0,
+    positions,
+    opts,
+  });
+
+  for (const coupleId of visibleGenerationZeroCouples) {
+    const couple = graph.couples[coupleId];
+    // Defensive: visible couple IDs are sourced from `graph.couples` above.
+    /* v8 ignore next */
+    if (couple === undefined) continue;
+    const partners = orderPartnersBySex(couple, graph.individuals);
+    const a = positions.get(partners[0]);
+    const b = positions.get(partners[1]);
+    // Defensive: both gen-0 partners are positioned by layoutGenerationZero.
+    /* v8 ignore next */
+    if (a === undefined || b === undefined) continue;
+
+    partnerEdges.push(
+      buildPartnerEdge(couple.id, partners, a.x, b.x, Y0, couple.consanguineous, opts.nodeSize),
+    );
+
+    const children = findChildrenOfCouple(childrenByCouple, couple.id);
+    if (children.length === 0) continue;
+
+    const midpointX = (a.x + b.x) / 2;
+    placeRowCentered(positions, children, midpointX, YD, opts.siblingPitch);
+    parentDrops.push(
+      buildParentDrop(
+        couple.id,
+        children,
+        midpointX,
+        Y0,
+        YD,
+        positions,
+        graph.individuals,
+        opts.nodeSize,
+      ),
+    );
+  }
 
   // Gen -1 + Gen -2 only if the proband has a parent couple.
   if (proband.childOf !== undefined) {

@@ -4,11 +4,13 @@ import { computePedigreeLayout } from '../../src/layout/compute.js';
 import { inferRelationships } from '../../src/model/infer.js';
 import { type PedigreeGraph, Provenance } from '../../src/model/types.js';
 import { Adopted, CarrierStatus, Sex, TwinType, VitalStatus } from '../../src/psc/semantics.js';
+import { applyGraphEdit } from '../../src/state/graph-edits.js';
 import { fmh, patient } from '../fixtures/builders.js';
 
 const Y0 = 240;
 const Y1 = 120;
 const Y2 = 0;
+const YD = 360;
 
 function nodeAt(layout: ReturnType<typeof computePedigreeLayout>, id: string) {
   return layout.nodes.find((n) => n.id === id);
@@ -97,6 +99,101 @@ describe('computePedigreeLayout — proband + parents (no aunts/uncles or grandp
     expect(xs).toEqual([-240, -160, -80, 0, 80, 160, 240]);
     expect(nodeAt(out, 'inferred:mother-of:p')?.x).toBe(-30);
     expect(nodeAt(out, 'inferred:father-of:p')?.x).toBe(30);
+  });
+});
+
+describe('computePedigreeLayout — descendants', () => {
+  it('renders an inferred partner and child row when the proband gets a child', () => {
+    const edited = applyGraphEdit(parsePedigree(patient({ id: 'p', gender: 'female' }), []), {
+      type: 'addRelative',
+      relativeOf: 'p',
+      kind: 'child',
+      newId: 'kid',
+      sex: Sex.Male,
+    });
+    const out = computePedigreeLayout(edited);
+
+    expect(nodeAt(out, 'p')).toEqual({ id: 'p', x: 0, y: Y0 });
+    expect(nodeAt(out, 'inferred:partner-of:p')).toEqual({
+      id: 'inferred:partner-of:p',
+      x: 60,
+      y: Y0,
+    });
+    expect(nodeAt(out, 'kid')).toEqual({ id: 'kid', x: 30, y: YD });
+
+    const childCoupleId = edited.individuals.kid?.childOf as string;
+    const childEdge = out.partnerEdges.find((edge) => edge.coupleId === childCoupleId);
+    const childDrop = out.parentDrops.find((drop) => drop.coupleId === childCoupleId);
+    expect(childEdge?.midpoint).toEqual({ x: 30, y: Y0 });
+    expect(childDrop?.children).toEqual(['kid']);
+  });
+
+  it('renders Ada-like proband children without hiding the existing sibling row', () => {
+    const withSibling = inferRelationships(
+      parsePedigree(patient({ id: 'p', gender: 'female' }), [
+        fmh({ id: 's', patientId: 'p', relationship: 'NSIS', sex: 'female' }),
+      ]),
+    );
+    const edited = applyGraphEdit(withSibling, {
+      type: 'addRelative',
+      relativeOf: 'p',
+      kind: 'child',
+      newId: 'kid',
+      sex: Sex.Male,
+    });
+    const out = computePedigreeLayout(edited);
+
+    expect(nodeAt(out, 'inferred:partner-of:p')).toEqual({
+      id: 'inferred:partner-of:p',
+      x: -100,
+      y: Y0,
+    });
+    expect(nodeAt(out, 'p')).toEqual({ id: 'p', x: -40, y: Y0 });
+    expect(nodeAt(out, 's')).toEqual({ id: 's', x: 40, y: Y0 });
+    expect(nodeAt(out, 'kid')).toEqual({ id: 'kid', x: -70, y: YD });
+  });
+
+  it('places a sibling partner on the outward side when that sibling gets a child', () => {
+    const withSibling = inferRelationships(
+      parsePedigree(patient({ id: 'p', gender: 'female' }), [
+        fmh({ id: 's', patientId: 'p', relationship: 'NSIS', sex: 'female' }),
+      ]),
+    );
+    const edited = applyGraphEdit(withSibling, {
+      type: 'addRelative',
+      relativeOf: 's',
+      kind: 'child',
+      newId: 'kid',
+      sex: Sex.Male,
+    });
+    const out = computePedigreeLayout(edited);
+
+    expect(nodeAt(out, 'p')).toEqual({ id: 'p', x: -40, y: Y0 });
+    expect(nodeAt(out, 's')).toEqual({ id: 's', x: 40, y: Y0 });
+    expect(nodeAt(out, 'inferred:partner-of:s')).toEqual({
+      id: 'inferred:partner-of:s',
+      x: 100,
+      y: Y0,
+    });
+    expect(nodeAt(out, 'kid')).toEqual({ id: 'kid', x: 70, y: YD });
+  });
+
+  it('renders a gen-0 partner edge even before that couple has children', () => {
+    const edited = applyGraphEdit(parsePedigree(patient({ id: 'p', gender: 'female' }), []), {
+      type: 'addRelative',
+      relativeOf: 'p',
+      kind: 'partner',
+      newId: 'partner',
+      sex: Sex.Male,
+    });
+    const out = computePedigreeLayout(edited);
+
+    expect(nodeAt(out, 'p')).toEqual({ id: 'p', x: 0, y: Y0 });
+    expect(nodeAt(out, 'partner')).toEqual({ id: 'partner', x: 60, y: Y0 });
+    expect(out.partnerEdges.find((edge) => edge.coupleId === 'couple:p+partner')?.midpoint).toEqual(
+      { x: 30, y: Y0 },
+    );
+    expect(out.parentDrops.find((drop) => drop.coupleId === 'couple:p+partner')).toBeUndefined();
   });
 });
 

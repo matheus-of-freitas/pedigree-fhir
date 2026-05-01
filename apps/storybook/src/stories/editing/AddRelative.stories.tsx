@@ -9,7 +9,7 @@ const meta: Meta<typeof EditingPedigreeView> = {
     docs: {
       description: {
         component:
-          'Select a node, then add a sibling or child via the toolbar. The graph mutates in place; the layout reflows automatically.',
+          'Select a node, then add a sibling or child via the toolbar. Child edits fabricate a partner when needed, and the layout reflows to show the new descendant row automatically.',
       },
     },
   },

@@ -2,7 +2,7 @@
   "name": "pedigree-fhir",
   "version": "0.0.0",
   "private": true,
-  "description": "Headless TypeScript library for displaying, generating, and managing 3-generation pedigree charts from FHIR resources.",
+  "description": "Headless TypeScript library for displaying, generating, and managing proband-centered pedigree charts from FHIR resources.",
   "license": "MIT",
   "type": "module",
   "engines": {

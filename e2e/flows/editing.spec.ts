@@ -15,6 +15,21 @@ test.describe('add relative', () => {
     expect(after).toBe(before + 1);
   });
 
+  test('selecting Ada and clicking "Add child" shows the new child in the chart', async ({
+    page,
+  }) => {
+    await page.goto(
+      `${SB}/iframe.html?id=editing-add-relative--add-sibling-or-child&viewMode=story&globals=theme:minimal`,
+    );
+    await page.getByTestId('node-proband').waitFor({ state: 'visible' });
+    const before = await page.locator('g[data-testid^="node-"]').count();
+    await page.getByTestId('node-proband').click();
+    await page.getByTestId('action-add-child').click();
+    await expect(page.getByText('New child')).toBeVisible();
+    const after = await page.locator('g[data-testid^="node-"]').count();
+    expect(after).toBe(before + 2);
+  });
+
   test('action buttons stay disabled until a node is selected', async ({ page }) => {
     await page.goto(
       `${SB}/iframe.html?id=editing-add-relative--add-sibling-or-child&viewMode=story&globals=theme:minimal`,
