@@ -1,19 +1,24 @@
-/// <reference types="fhir" />
+import type {
+  R4CodeableConcept,
+  R4Extension,
+  R4FamilyMemberHistory,
+  R4Patient,
+} from '@pedigree/core';
 
 const V3_FAMILY = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
 const V3_ROLE = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
 const ADMIN_GENDER = 'http://hl7.org/fhir/administrative-gender';
 const PARENT_EXT = 'http://hl7.org/fhir/StructureDefinition/family-member-history-genetics-parent';
 
-function rel(code: string): fhir4.CodeableConcept {
+function rel(code: string): R4CodeableConcept {
   return { coding: [{ system: V3_FAMILY, code }] };
 }
 
-function sex(code: 'male' | 'female'): fhir4.CodeableConcept {
+function sex(code: 'male' | 'female'): R4CodeableConcept {
   return { coding: [{ system: ADMIN_GENDER, code }] };
 }
 
-function parentExt(ref: string, role: 'NMTH' | 'NFTH'): fhir4.Extension {
+function parentExt(ref: string, role: 'NMTH' | 'NFTH'): R4Extension {
   return {
     url: PARENT_EXT,
     extension: [
@@ -27,14 +32,14 @@ function parentExt(ref: string, role: 'NMTH' | 'NFTH'): fhir4.Extension {
 }
 
 /** A 3-generation pedigree fixture covering both lineages, with one sibling. */
-export const proband: fhir4.Patient = {
+export const proband: R4Patient = {
   resourceType: 'Patient',
   id: 'proband',
   gender: 'female',
   name: [{ text: 'Ada Byron' }],
 };
 
-export const familyHistory: fhir4.FamilyMemberHistory[] = [
+export const familyHistory: R4FamilyMemberHistory[] = [
   {
     resourceType: 'FamilyMemberHistory',
     id: 'mother',

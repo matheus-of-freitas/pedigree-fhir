@@ -1,14 +1,14 @@
-/// <reference types="fhir" />
 import { describe, expect, it } from 'vitest';
 import { ParentRole, SiblingRole } from '../../src/fhir/extensions.js';
 import { PedigreeParseError, parsePedigree } from '../../src/fhir/parse.js';
+import type { R4FamilyMemberHistory, R4Patient } from '../../src/fhir/types.js';
 import { Provenance } from '../../src/model/types.js';
 import { AffectedStatus, Sex, TwinType, VitalStatus } from '../../src/psc/semantics.js';
 import { fmh, patient } from '../fixtures/builders.js';
 
 describe('parsePedigree — proband', () => {
   it('throws when the patient has no id', () => {
-    expect(() => parsePedigree({ resourceType: 'Patient' } as fhir4.Patient, [])).toThrow(
+    expect(() => parsePedigree({ resourceType: 'Patient' } as R4Patient, [])).toThrow(
       PedigreeParseError,
     );
   });
@@ -46,13 +46,13 @@ describe('parsePedigree — proband', () => {
   });
 
   it('marks the proband deceased when deceasedDateTime is set', () => {
-    const p: fhir4.Patient = { resourceType: 'Patient', id: 'p', deceasedDateTime: '2020-01-01' };
+    const p: R4Patient = { resourceType: 'Patient', id: 'p', deceasedDateTime: '2020-01-01' };
     const g = parsePedigree(p, []);
     expect(g.individuals.p?.semantics.vital).toBe(VitalStatus.Deceased);
   });
 
   it('falls back to given+family names when name.text is absent', () => {
-    const p: fhir4.Patient = {
+    const p: R4Patient = {
       resourceType: 'Patient',
       id: 'p',
       name: [{ given: ['Ada', 'Lovelace'], family: 'Byron' }],
@@ -61,14 +61,14 @@ describe('parsePedigree — proband', () => {
   });
 
   it('omits name when there is no usable HumanName entry', () => {
-    const p: fhir4.Patient = { resourceType: 'Patient', id: 'p', name: [{}] };
+    const p: R4Patient = { resourceType: 'Patient', id: 'p', name: [{}] };
     expect(parsePedigree(p, []).individuals.p?.name).toBeUndefined();
   });
 });
 
 describe('parsePedigree — FMH individuals', () => {
   it('skips FMH resources missing an id', () => {
-    const noId: fhir4.FamilyMemberHistory = {
+    const noId: R4FamilyMemberHistory = {
       resourceType: 'FamilyMemberHistory',
       status: 'completed',
       patient: { reference: 'Patient/p' },
@@ -100,7 +100,7 @@ describe('parsePedigree — FMH individuals', () => {
   });
 
   it('falls back to condition.code.text when no coding is supplied', () => {
-    const c: fhir4.FamilyMemberHistory = {
+    const c: R4FamilyMemberHistory = {
       resourceType: 'FamilyMemberHistory',
       id: 'm',
       status: 'completed',
@@ -119,7 +119,7 @@ describe('parsePedigree — FMH individuals', () => {
   });
 
   it('skips conditions with neither coding nor text', () => {
-    const c: fhir4.FamilyMemberHistory = {
+    const c: R4FamilyMemberHistory = {
       resourceType: 'FamilyMemberHistory',
       id: 'm',
       status: 'completed',
@@ -137,7 +137,7 @@ describe('parsePedigree — FMH individuals', () => {
     ['deceasedRange', { deceasedRange: {} }],
     ['deceasedString', { deceasedString: 'in old age' }],
   ])('marks deceased via %s', (_name, override) => {
-    const m: fhir4.FamilyMemberHistory = {
+    const m: R4FamilyMemberHistory = {
       resourceType: 'FamilyMemberHistory',
       id: 'm',
       status: 'completed',
@@ -150,7 +150,7 @@ describe('parsePedigree — FMH individuals', () => {
   });
 
   it('omits relationshipToProband when relationship has no code', () => {
-    const m: fhir4.FamilyMemberHistory = {
+    const m: R4FamilyMemberHistory = {
       resourceType: 'FamilyMemberHistory',
       id: 'm',
       status: 'completed',
@@ -359,7 +359,7 @@ describe('parsePedigree — twin grouping', () => {
   });
 
   it('skips genetics-sibling on FMHs without an id', () => {
-    const noId: fhir4.FamilyMemberHistory = {
+    const noId: R4FamilyMemberHistory = {
       resourceType: 'FamilyMemberHistory',
       status: 'completed',
       patient: { reference: 'Patient/p' },
@@ -370,7 +370,7 @@ describe('parsePedigree — twin grouping', () => {
   });
 
   it('skips genetics-parent processing on FMHs without an id', () => {
-    const noId: fhir4.FamilyMemberHistory = {
+    const noId: R4FamilyMemberHistory = {
       resourceType: 'FamilyMemberHistory',
       status: 'completed',
       patient: { reference: 'Patient/p' },

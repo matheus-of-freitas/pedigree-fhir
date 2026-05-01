@@ -42,9 +42,6 @@ importers:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
     devDependencies:
-      '@types/fhir':
-        specifier: ^0.0.41
-        version: 0.0.41
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.28
@@ -91,9 +88,6 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.2.4
         version: 4.2.4(vite@5.4.21(@types/node@20.19.39)(lightningcss@1.32.0))
-      '@types/fhir':
-        specifier: ^0.0.41
-        version: 0.0.41
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.39

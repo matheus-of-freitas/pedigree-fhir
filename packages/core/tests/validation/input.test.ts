@@ -1,15 +1,15 @@
-/// <reference types="fhir" />
 import { describe, expect, it } from 'vitest';
 import {
   GENETICS_PARENT_EXTENSION,
   GENETICS_SIBLING_EXTENSION,
 } from '../../src/fhir/extensions.js';
+import type { R4Extension, R4Patient } from '../../src/fhir/types.js';
 import { validateFhirInput } from '../../src/validation/input.js';
 import { patient } from '../fixtures/builders.js';
 
 const V3_ROLE = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
 
-function parentExtension(reference?: string): fhir4.Extension {
+function parentExtension(reference?: string): R4Extension {
   return {
     url: GENETICS_PARENT_EXTENSION,
     extension: [
@@ -22,7 +22,7 @@ function parentExtension(reference?: string): fhir4.Extension {
   };
 }
 
-function siblingExtension(reference?: string): fhir4.Extension {
+function siblingExtension(reference?: string): R4Extension {
   return {
     url: GENETICS_SIBLING_EXTENSION,
     extension: [
@@ -37,7 +37,7 @@ function siblingExtension(reference?: string): fhir4.Extension {
 
 describe('validateFhirInput', () => {
   it('flags a patient missing the required id', () => {
-    const diagnostics = validateFhirInput({ resourceType: 'Patient' } as fhir4.Patient, []);
+    const diagnostics = validateFhirInput({ resourceType: 'Patient' } as R4Patient, []);
     expect(diagnostics).toEqual([
       {
         code: 'input/patient-missing-id',

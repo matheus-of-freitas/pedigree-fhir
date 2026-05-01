@@ -1,4 +1,3 @@
-/// <reference types="fhir" />
 import { describe, expect, it } from 'vitest';
 import {
   GENETICS_PARENT_EXTENSION,
@@ -10,6 +9,7 @@ import {
 } from '../../src/fhir/extensions.js';
 import { parsePedigree } from '../../src/fhir/parse.js';
 import { serializePedigree } from '../../src/fhir/serialize.js';
+import type { R4FamilyMemberHistory } from '../../src/fhir/types.js';
 import { inferRelationships } from '../../src/model/infer.js';
 import { type PedigreeGraph, Provenance } from '../../src/model/types.js';
 import { AffectedStatus, Sex, VitalStatus } from '../../src/psc/semantics.js';
@@ -90,7 +90,7 @@ describe('serializePedigree — FMH list', () => {
   });
 
   it('uses the FAMMEMB default code when relationshipToProband is unset', () => {
-    const noRel: fhir4.FamilyMemberHistory = {
+    const noRel: R4FamilyMemberHistory = {
       resourceType: 'FamilyMemberHistory',
       id: 'x',
       status: 'completed',

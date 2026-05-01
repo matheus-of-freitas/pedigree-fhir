@@ -1,4 +1,4 @@
-/// <reference types="fhir" />
+import type { R4Extension, R4FamilyMemberHistory, R4Reference } from './types.js';
 
 /**
  * HL7 FHIR genetics-related extensions on FamilyMemberHistory.
@@ -54,9 +54,9 @@ export interface GeneticsSibling {
  * have to null-check.
  */
 function findExtensions(
-  host: { extension?: fhir4.Extension[] | undefined },
+  host: { extension?: R4Extension[] | undefined },
   url: string,
-): fhir4.Extension[] {
+): R4Extension[] {
   return (host.extension ?? []).filter((e) => e.url === url);
 }
 
@@ -65,11 +65,11 @@ function findExtensions(
  * and genetics-sibling extensions are *complex* extensions whose payload lives
  * in `Extension.extension[]`, not in a `valueX`.
  */
-function findSubExtension(parent: fhir4.Extension, url: string): fhir4.Extension | undefined {
+function findSubExtension(parent: R4Extension, url: string): R4Extension | undefined {
   return (parent.extension ?? []).find((e) => e.url === url);
 }
 
-function readReferenceFromComplexExtension(ext: fhir4.Extension): GeneticsParent | undefined {
+function readReferenceFromComplexExtension(ext: R4Extension): GeneticsParent | undefined {
   const refExt = findSubExtension(ext, 'reference');
   const reference = refExt?.valueReference?.reference;
   if (reference === undefined) return undefined;
@@ -79,7 +79,7 @@ function readReferenceFromComplexExtension(ext: fhir4.Extension): GeneticsParent
   return role === undefined ? { reference } : { reference, role };
 }
 
-function readSiblingFromComplexExtension(ext: fhir4.Extension): GeneticsSibling | undefined {
+function readSiblingFromComplexExtension(ext: R4Extension): GeneticsSibling | undefined {
   const refExt = findSubExtension(ext, 'reference');
   const reference = refExt?.valueReference?.reference;
   if (reference === undefined) return undefined;
@@ -90,7 +90,7 @@ function readSiblingFromComplexExtension(ext: fhir4.Extension): GeneticsSibling 
   return role === undefined ? { reference } : { reference, role };
 }
 
-export function getGeneticsParents(fmh: fhir4.FamilyMemberHistory): GeneticsParent[] {
+export function getGeneticsParents(fmh: R4FamilyMemberHistory): GeneticsParent[] {
   const parents: GeneticsParent[] = [];
   for (const ext of findExtensions(fmh, GENETICS_PARENT_EXTENSION)) {
     const parent = readReferenceFromComplexExtension(ext);
@@ -99,7 +99,7 @@ export function getGeneticsParents(fmh: fhir4.FamilyMemberHistory): GeneticsPare
   return parents;
 }
 
-export function getGeneticsSiblings(fmh: fhir4.FamilyMemberHistory): GeneticsSibling[] {
+export function getGeneticsSiblings(fmh: R4FamilyMemberHistory): GeneticsSibling[] {
   const siblings: GeneticsSibling[] = [];
   for (const ext of findExtensions(fmh, GENETICS_SIBLING_EXTENSION)) {
     const sibling = readSiblingFromComplexExtension(ext);
@@ -108,8 +108,8 @@ export function getGeneticsSiblings(fmh: fhir4.FamilyMemberHistory): GeneticsSib
   return siblings;
 }
 
-export function getGeneticsObservationRefs(fmh: fhir4.FamilyMemberHistory): fhir4.Reference[] {
-  const refs: fhir4.Reference[] = [];
+export function getGeneticsObservationRefs(fmh: R4FamilyMemberHistory): R4Reference[] {
+  const refs: R4Reference[] = [];
   for (const ext of findExtensions(fmh, GENETICS_OBSERVATION_EXTENSION)) {
     if (ext.valueReference !== undefined) refs.push(ext.valueReference);
   }
@@ -118,8 +118,8 @@ export function getGeneticsObservationRefs(fmh: fhir4.FamilyMemberHistory): fhir
 
 const V3_ROLE_CODE_SYSTEM = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
 
-function buildParentExtension(parent: GeneticsParent): fhir4.Extension {
-  const subs: fhir4.Extension[] = [
+function buildParentExtension(parent: GeneticsParent): R4Extension {
+  const subs: R4Extension[] = [
     { url: 'reference', valueReference: { reference: parent.reference } },
   ];
   if (parent.role !== undefined) {
@@ -133,8 +133,8 @@ function buildParentExtension(parent: GeneticsParent): fhir4.Extension {
   return { url: GENETICS_PARENT_EXTENSION, extension: subs };
 }
 
-function buildSiblingExtension(sibling: GeneticsSibling): fhir4.Extension {
-  const subs: fhir4.Extension[] = [
+function buildSiblingExtension(sibling: GeneticsSibling): R4Extension {
+  const subs: R4Extension[] = [
     { url: 'reference', valueReference: { reference: sibling.reference } },
   ];
   if (sibling.role !== undefined) {
@@ -155,20 +155,20 @@ function buildSiblingExtension(sibling: GeneticsSibling): fhir4.Extension {
  * immutable-data contract.
  */
 export function setGeneticsExtensions(
-  fmh: fhir4.FamilyMemberHistory,
+  fmh: R4FamilyMemberHistory,
   next: {
     parents?: GeneticsParent[];
     siblings?: GeneticsSibling[];
-    observations?: fhir4.Reference[];
+    observations?: R4Reference[];
   },
-): fhir4.FamilyMemberHistory {
+): R4FamilyMemberHistory {
   const knownUrls = new Set<string>([
     GENETICS_PARENT_EXTENSION,
     GENETICS_SIBLING_EXTENSION,
     GENETICS_OBSERVATION_EXTENSION,
   ]);
   const preserved = (fmh.extension ?? []).filter((e) => !knownUrls.has(e.url));
-  const rebuilt: fhir4.Extension[] = [...preserved];
+  const rebuilt: R4Extension[] = [...preserved];
   for (const parent of next.parents ?? []) rebuilt.push(buildParentExtension(parent));
   for (const sibling of next.siblings ?? []) rebuilt.push(buildSiblingExtension(sibling));
   for (const ref of next.observations ?? []) {

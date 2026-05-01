@@ -1,4 +1,5 @@
 import { Severity, Sex, createRegistry } from '@pedigree/core';
+import type { R4FamilyMemberHistory, R4Patient } from '@pedigree/core';
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
@@ -74,8 +75,8 @@ describe('useValidation', () => {
 
 describe('useInputValidation', () => {
   it('runs raw-FHIR validation without requiring a store', () => {
-    const patient = { resourceType: 'Patient', id: 'p' } as fhir4.Patient;
-    const familyHistory: fhir4.FamilyMemberHistory[] = [
+    const patient = { resourceType: 'Patient', id: 'p' } as R4Patient;
+    const familyHistory: R4FamilyMemberHistory[] = [
       {
         resourceType: 'FamilyMemberHistory',
         id: 'm',

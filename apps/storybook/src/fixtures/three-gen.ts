@@ -1,4 +1,9 @@
-/// <reference types="fhir" />
+import type {
+  R4CodeableConcept,
+  R4Extension,
+  R4FamilyMemberHistory,
+  R4Patient,
+} from '@pedigree/core';
 
 const V3_FAMILY = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
 const V3_ROLE = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
@@ -7,15 +12,15 @@ const PARENT_EXT = 'http://hl7.org/fhir/StructureDefinition/family-member-histor
 const SIBLING_EXT =
   'http://hl7.org/fhir/StructureDefinition/family-member-history-genetics-sibling';
 
-function rel(code: string): fhir4.CodeableConcept {
+function rel(code: string): R4CodeableConcept {
   return { coding: [{ system: V3_FAMILY, code }] };
 }
 
-function sex(code: 'male' | 'female'): fhir4.CodeableConcept {
+function sex(code: 'male' | 'female'): R4CodeableConcept {
   return { coding: [{ system: ADMIN_GENDER, code }] };
 }
 
-function parentExt(ref: string, role: 'NMTH' | 'NFTH'): fhir4.Extension {
+function parentExt(ref: string, role: 'NMTH' | 'NFTH'): R4Extension {
   return {
     url: PARENT_EXT,
     extension: [
@@ -28,7 +33,7 @@ function parentExt(ref: string, role: 'NMTH' | 'NFTH'): fhir4.Extension {
   };
 }
 
-function siblingExt(ref?: string): fhir4.Extension {
+function siblingExt(ref?: string): R4Extension {
   return {
     url: SIBLING_EXT,
     extension: [
@@ -42,8 +47,8 @@ function siblingExt(ref?: string): fhir4.Extension {
 }
 
 export interface Fixture {
-  patient: fhir4.Patient;
-  familyHistory: fhir4.FamilyMemberHistory[];
+  patient: R4Patient;
+  familyHistory: R4FamilyMemberHistory[];
 }
 
 /**

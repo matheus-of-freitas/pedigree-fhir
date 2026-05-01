@@ -1,4 +1,3 @@
-/// <reference types="fhir" />
 import {
   type Individual,
   type IndividualId,
@@ -13,6 +12,7 @@ import {
   SiblingRole,
   setGeneticsExtensions,
 } from './extensions.js';
+import type { R4CodeableConcept, R4FamilyMemberHistory, R4Patient } from './types.js';
 
 const ADMIN_GENDER = 'http://hl7.org/fhir/administrative-gender';
 const V3_FAMILY = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
@@ -20,8 +20,8 @@ const V3_FAMILY = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
 const DEFAULT_RELATIONSHIP = 'FAMMEMB';
 
 export interface SerializedPedigree {
-  patient: fhir4.Patient;
-  familyHistory: fhir4.FamilyMemberHistory[];
+  patient: R4Patient;
+  familyHistory: R4FamilyMemberHistory[];
 }
 
 function sexToGender(s: Sex): 'male' | 'female' | 'other' | undefined {
@@ -37,12 +37,12 @@ function parentRoleForSex(sex: Sex): ParentRole | undefined {
   return undefined;
 }
 
-function relationshipConcept(code: string | undefined): fhir4.CodeableConcept {
+function relationshipConcept(code: string | undefined): R4CodeableConcept {
   return { coding: [{ system: V3_FAMILY, code: code ?? DEFAULT_RELATIONSHIP }] };
 }
 
-function buildPatient(ind: Individual): fhir4.Patient {
-  const p: fhir4.Patient = { resourceType: 'Patient', id: ind.id };
+function buildPatient(ind: Individual): R4Patient {
+  const p: R4Patient = { resourceType: 'Patient', id: ind.id };
   const gender = sexToGender(ind.semantics.sex);
   if (gender !== undefined) p.gender = gender;
   if (ind.semantics.vital === VitalStatus.Deceased) p.deceasedBoolean = true;
@@ -50,8 +50,8 @@ function buildPatient(ind: Individual): fhir4.Patient {
   return p;
 }
 
-function buildBaseFmh(ind: Individual, probandId: IndividualId): fhir4.FamilyMemberHistory {
-  const r: fhir4.FamilyMemberHistory = {
+function buildBaseFmh(ind: Individual, probandId: IndividualId): R4FamilyMemberHistory {
+  const r: R4FamilyMemberHistory = {
     resourceType: 'FamilyMemberHistory',
     id: ind.id,
     status: 'completed',
@@ -146,7 +146,7 @@ export function serializePedigree(graph: PedigreeGraph): SerializedPedigree {
 
   const patient = buildPatient(proband);
   const twinGroups = indexTwinGroups(graph);
-  const familyHistory: fhir4.FamilyMemberHistory[] = [];
+  const familyHistory: R4FamilyMemberHistory[] = [];
 
   for (const ind of Object.values(graph.individuals)) {
     if (ind.id === graph.proband) continue;

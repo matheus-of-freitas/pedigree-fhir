@@ -1,10 +1,10 @@
-/// <reference types="fhir" />
 import {
   GENETICS_PARENT_EXTENSION,
   GENETICS_SIBLING_EXTENSION,
   type ParentRole,
   type SiblingRole,
 } from '../../src/fhir/extensions.js';
+import type { R4Extension, R4FamilyMemberHistory, R4Patient } from '../../src/fhir/types.js';
 
 const V3_ROLE = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
 const V3_FAMILY = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
@@ -20,8 +20,8 @@ export function patient(args: {
   gender?: 'male' | 'female' | 'other' | 'unknown';
   deceased?: boolean;
   name?: string;
-}): fhir4.Patient {
-  const p: fhir4.Patient = { resourceType: 'Patient', id: args.id };
+}): R4Patient {
+  const p: R4Patient = { resourceType: 'Patient', id: args.id };
   if (args.gender !== undefined) p.gender = args.gender;
   if (args.deceased !== undefined) p.deceasedBoolean = args.deceased;
   if (args.name !== undefined) p.name = [{ text: args.name }];
@@ -37,8 +37,8 @@ export function fmh(args: {
   conditions?: { code: string; display?: string }[];
   parentRefs?: { reference: string; role?: ParentRole }[];
   siblingRefs?: { reference: string; role?: SiblingRole }[];
-}): fhir4.FamilyMemberHistory {
-  const r: fhir4.FamilyMemberHistory = {
+}): R4FamilyMemberHistory {
+  const r: R4FamilyMemberHistory = {
     resourceType: 'FamilyMemberHistory',
     id: args.id,
     status: 'completed',
@@ -61,11 +61,9 @@ export function fmh(args: {
       },
     }));
   }
-  const exts: fhir4.Extension[] = [];
+  const exts: R4Extension[] = [];
   for (const p of args.parentRefs ?? []) {
-    const sub: fhir4.Extension[] = [
-      { url: 'reference', valueReference: { reference: p.reference } },
-    ];
+    const sub: R4Extension[] = [{ url: 'reference', valueReference: { reference: p.reference } }];
     if (p.role !== undefined) {
       sub.push({
         url: 'type',
@@ -75,9 +73,7 @@ export function fmh(args: {
     exts.push({ url: GENETICS_PARENT_EXTENSION, extension: sub });
   }
   for (const s of args.siblingRefs ?? []) {
-    const sub: fhir4.Extension[] = [
-      { url: 'reference', valueReference: { reference: s.reference } },
-    ];
+    const sub: R4Extension[] = [{ url: 'reference', valueReference: { reference: s.reference } }];
     if (s.role !== undefined) {
       sub.push({
         url: 'type',

@@ -19,6 +19,7 @@ The package currently exports these main areas:
 - `fhir/*`
   - `parsePedigree`
   - `serializePedigree`
+  - explicit `R4*` type aliases for `Patient`, `FamilyMemberHistory`, and related FHIR datatypes
   - genetics extension helpers
   - relationship-code helpers
 - `model/*`
@@ -67,6 +68,11 @@ const graphDiagnostics = defaultRegistry().validate(store.getState().graph);
 ```
 
 ## Parsing and inference
+
+The package currently makes its FHIR wire contract explicit via exported `R4*`
+type aliases such as `R4Patient` and `R4FamilyMemberHistory`. That keeps the
+library aligned to the current R4 runtime behavior while leaving room for a
+future R5 strategy to be added intentionally rather than through ambient globals.
 
 `parsePedigree(patient, familyHistory)` performs the deterministic FHIR-to-graph conversion:
 

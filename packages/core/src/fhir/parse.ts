@@ -1,4 +1,3 @@
-/// <reference types="fhir" />
 import { makeCoupleId } from '../model/ids.js';
 import {
   type Couple,
@@ -19,6 +18,7 @@ import {
   VitalStatus,
 } from '../psc/semantics.js';
 import { ParentRole, SiblingRole, getGeneticsParents, getGeneticsSiblings } from './extensions.js';
+import type { R4FamilyMemberHistory, R4Patient } from './types.js';
 
 export class PedigreeParseError extends Error {
   override readonly name = 'PedigreeParseError';
@@ -41,11 +41,11 @@ function mapGender(code: string | undefined): Sex {
   }
 }
 
-function patientIsDeceased(patient: fhir4.Patient): boolean {
+function patientIsDeceased(patient: R4Patient): boolean {
   return Boolean(patient.deceasedBoolean) || patient.deceasedDateTime !== undefined;
 }
 
-function fmhIsDeceased(fmh: fhir4.FamilyMemberHistory): boolean {
+function fmhIsDeceased(fmh: R4FamilyMemberHistory): boolean {
   return (
     Boolean(fmh.deceasedBoolean) ||
     fmh.deceasedAge !== undefined ||
@@ -55,11 +55,11 @@ function fmhIsDeceased(fmh: fhir4.FamilyMemberHistory): boolean {
   );
 }
 
-function extractFmhSex(fmh: fhir4.FamilyMemberHistory): Sex {
+function extractFmhSex(fmh: R4FamilyMemberHistory): Sex {
   return mapGender(fmh.sex?.coding?.[0]?.code);
 }
 
-function extractFmhConditions(fmh: fhir4.FamilyMemberHistory): ConditionRecord[] {
+function extractFmhConditions(fmh: R4FamilyMemberHistory): ConditionRecord[] {
   const records: ConditionRecord[] = [];
   for (const c of fmh.condition ?? []) {
     const coding = c.code?.coding?.[0];
@@ -75,7 +75,7 @@ function extractFmhConditions(fmh: fhir4.FamilyMemberHistory): ConditionRecord[]
   return records;
 }
 
-function extractName(patient: fhir4.Patient): string | undefined {
+function extractName(patient: R4Patient): string | undefined {
   const n = patient.name?.[0];
   if (n === undefined) return undefined;
   if (n.text !== undefined) return n.text;
@@ -170,7 +170,7 @@ function buildIndividual(args: {
   return ind;
 }
 
-function buildProband(patient: fhir4.Patient): Individual {
+function buildProband(patient: R4Patient): Individual {
   if (patient.id === undefined) {
     throw new PedigreeParseError('Patient resource is missing required `id` field');
   }
@@ -186,7 +186,7 @@ function buildProband(patient: fhir4.Patient): Individual {
   });
 }
 
-function buildFmhIndividual(fmh: fhir4.FamilyMemberHistory): Individual | undefined {
+function buildFmhIndividual(fmh: R4FamilyMemberHistory): Individual | undefined {
   if (fmh.id === undefined) return undefined;
   const sex = extractFmhSex(fmh);
   const vital = fmhIsDeceased(fmh) ? VitalStatus.Deceased : VitalStatus.Living;
@@ -247,8 +247,8 @@ function ensureFabricatedPartner(
  * validation layer (M4) surfaces those issues as warnings to consumers.
  */
 export function parsePedigree(
-  patient: fhir4.Patient,
-  familyHistory: readonly fhir4.FamilyMemberHistory[],
+  patient: R4Patient,
+  familyHistory: readonly R4FamilyMemberHistory[],
 ): PedigreeGraph {
   const proband = buildProband(patient);
   const individuals = new Map<IndividualId, Individual>();

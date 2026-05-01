@@ -1,14 +1,14 @@
-/// <reference types="fhir" />
 import { describe, expect, it } from 'vitest';
 import { ParentRole } from '../../src/fhir/extensions.js';
 import { parsePedigree } from '../../src/fhir/parse.js';
+import type { R4FamilyMemberHistory } from '../../src/fhir/types.js';
 import { makeCoupleId } from '../../src/model/ids.js';
 import { inferRelationships } from '../../src/model/infer.js';
 import { type PedigreeGraph, Provenance } from '../../src/model/types.js';
 import { Sex, VitalStatus } from '../../src/psc/semantics.js';
 import { fmh, patient } from '../fixtures/builders.js';
 
-function buildGraph(...family: fhir4.FamilyMemberHistory[]): PedigreeGraph {
+function buildGraph(...family: R4FamilyMemberHistory[]): PedigreeGraph {
   return parsePedigree(patient({ id: 'p', gender: 'female' }), family);
 }
 

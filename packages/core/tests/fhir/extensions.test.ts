@@ -1,10 +1,11 @@
-/// <reference types="fhir" />
 import { describe, expect, it } from 'vitest';
 import {
   GENETICS_OBSERVATION_EXTENSION,
   GENETICS_PARENT_EXTENSION,
   GENETICS_SIBLING_EXTENSION,
   ParentRole,
+  type R4Extension,
+  type R4FamilyMemberHistory,
   SiblingRole,
   getGeneticsObservationRefs,
   getGeneticsParents,
@@ -14,8 +15,8 @@ import {
 
 const V3_ROLE_SYSTEM = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
 
-function fmh(extension?: fhir4.Extension[]): fhir4.FamilyMemberHistory {
-  const r: fhir4.FamilyMemberHistory = {
+function fmh(extension?: R4Extension[]): R4FamilyMemberHistory {
+  const r: R4FamilyMemberHistory = {
     resourceType: 'FamilyMemberHistory',
     status: 'completed',
     patient: { reference: 'Patient/proband' },

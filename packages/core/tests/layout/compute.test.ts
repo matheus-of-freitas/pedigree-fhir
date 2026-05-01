@@ -1,4 +1,3 @@
-/// <reference types="fhir" />
 import { describe, expect, it } from 'vitest';
 import { parsePedigree } from '../../src/fhir/parse.js';
 import { computePedigreeLayout } from '../../src/layout/compute.js';

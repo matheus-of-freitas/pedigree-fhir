@@ -4,6 +4,7 @@ export * from './model/ids.js';
 export * from './model/infer.js';
 export * from './fhir/extensions.js';
 export * from './fhir/relationship-codes.js';
+export * from './fhir/types.js';
 export * from './fhir/parse.js';
 export * from './fhir/serialize.js';
 export * from './layout/types.js';

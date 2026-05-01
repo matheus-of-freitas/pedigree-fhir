@@ -1,5 +1,5 @@
-/// <reference types="fhir" />
 import { GENETICS_PARENT_EXTENSION, GENETICS_SIBLING_EXTENSION } from '../fhir/extensions.js';
+import type { R4Extension, R4FamilyMemberHistory, R4Patient } from '../fhir/types.js';
 import { type Diagnostic, type DiagnosticResourceRef, Severity } from './types.js';
 
 function resourceRef(
@@ -22,7 +22,7 @@ function fmhPath(index: number): string {
   return `familyHistory[${index}]`;
 }
 
-function fmhLabel(fmh: fhir4.FamilyMemberHistory, index: number): string {
+function fmhLabel(fmh: R4FamilyMemberHistory, index: number): string {
   return fmh.id ?? fmhPath(index);
 }
 
@@ -32,17 +32,17 @@ function refToResourceId(reference: string): string {
 }
 
 function findExtensions(
-  host: { extension?: fhir4.Extension[] | undefined },
+  host: { extension?: R4Extension[] | undefined },
   url: string,
-): fhir4.Extension[] {
+): R4Extension[] {
   return (host.extension ?? []).filter((e) => e.url === url);
 }
 
-function findSubExtension(parent: fhir4.Extension, url: string): fhir4.Extension | undefined {
+function findSubExtension(parent: R4Extension, url: string): R4Extension | undefined {
   return (parent.extension ?? []).find((e) => e.url === url);
 }
 
-function extractReference(ext: fhir4.Extension): string | undefined {
+function extractReference(ext: R4Extension): string | undefined {
   return findSubExtension(ext, 'reference')?.valueReference?.reference;
 }
 
@@ -52,8 +52,8 @@ function extractReference(ext: fhir4.Extension): string | undefined {
  * than a replacement for it.
  */
 export function validateFhirInput(
-  patient: fhir4.Patient,
-  familyHistory: readonly fhir4.FamilyMemberHistory[],
+  patient: R4Patient,
+  familyHistory: readonly R4FamilyMemberHistory[],
 ): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
 
