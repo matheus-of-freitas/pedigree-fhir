@@ -21,10 +21,8 @@ export interface UsePedigreeResult {
  */
 export function usePedigree(): UsePedigreeResult {
   const store = usePedigreeStore();
-  const state = useSyncExternalStore(store.subscribe, store.getState);
-  const layout = useMemo(
-    () => computePedigreeLayout(state.graph, state.layoutOptions),
-    [state.graph, state.layoutOptions],
-  );
-  return { graph: state.graph, layout, layoutOptions: state.layoutOptions };
+  const graph = useSyncExternalStore(store.subscribe, () => store.getState().graph);
+  const layoutOptions = useSyncExternalStore(store.subscribe, () => store.getState().layoutOptions);
+  const layout = useMemo(() => computePedigreeLayout(graph, layoutOptions), [graph, layoutOptions]);
+  return { graph, layout, layoutOptions };
 }

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { PedigreeProvider } from '../src/context.js';
 import { Edge } from '../src/primitives/Edge.js';
@@ -17,6 +17,30 @@ describe('<Pedigree>', () => {
       </PedigreeProvider>,
     );
     expect(screen.getByTestId('count').textContent).toBe('nodes:3');
+  });
+
+  it('does not re-run the render function for selection-only updates', () => {
+    const store = tinyStore();
+    let renders = 0;
+
+    render(
+      <PedigreeProvider store={store}>
+        <Pedigree>
+          {({ layout }) => {
+            renders += 1;
+            return <div data-testid="count">nodes:{layout.nodes.length}</div>;
+          }}
+        </Pedigree>
+      </PedigreeProvider>,
+    );
+
+    expect(renders).toBe(1);
+
+    act(() => {
+      store.dispatch({ type: 'selectIndividual', id: 'p' });
+    });
+
+    expect(renders).toBe(1);
   });
 });
 

@@ -78,12 +78,28 @@ function orderPartnersBySex(
   return [a, b];
 }
 
-function findChildrenOfCouple(graph: PedigreeGraph, coupleId: CoupleId): IndividualId[] {
-  const ids: IndividualId[] = [];
+function indexChildrenByCouple(
+  graph: PedigreeGraph,
+): ReadonlyMap<CoupleId, readonly IndividualId[]> {
+  const childrenByCouple = new Map<CoupleId, IndividualId[]>();
   for (const ind of Object.values(graph.individuals)) {
-    if (ind.childOf === coupleId) ids.push(ind.id);
+    if (ind.childOf === undefined) continue;
+    const existing = childrenByCouple.get(ind.childOf);
+    if (existing === undefined) childrenByCouple.set(ind.childOf, [ind.id]);
+    else existing.push(ind.id);
   }
-  return ids;
+  return childrenByCouple;
+}
+
+function findChildrenOfCouple(
+  childrenByCouple: ReadonlyMap<CoupleId, readonly IndividualId[]>,
+  coupleId: CoupleId,
+): readonly IndividualId[] {
+  // Defensive: current callers only ask for couple IDs already referenced by an
+  // individual's `childOf`, so the map should always contain the key. Keep the
+  // fallback for hand-built callers reusing this helper directly.
+  /* v8 ignore next */
+  return childrenByCouple.get(coupleId) ?? [];
 }
 
 function placeRowCentered(
@@ -308,6 +324,7 @@ function computeBounds(
 
 function layoutGrandparentSide(args: {
   graph: PedigreeGraph;
+  childrenByCouple: ReadonlyMap<CoupleId, readonly IndividualId[]>;
   parentId: IndividualId;
   parentX: number;
   side: 'maternal' | 'paternal';
@@ -327,7 +344,7 @@ function layoutGrandparentSide(args: {
   /* v8 ignore next */
   if (gpCouple === undefined) return;
 
-  const sibship = findChildrenOfCouple(args.graph, gpCouple.id);
+  const sibship = findChildrenOfCouple(args.childrenByCouple, gpCouple.id);
   const siblings = sibship.filter((id) => id !== args.parentId);
 
   // Place the in-laws (aunts/uncles) flanking the parent on the side away
@@ -396,6 +413,7 @@ export function computePedigreeLayout(
 ): LaidOutPedigree {
   const opts = { ...LAYOUT_DEFAULTS, ...options };
   const graph = applyCompact(rawGraph, options.hideAuntsUncles);
+  const childrenByCouple = indexChildrenByCouple(graph);
   const proband = graph.individuals[graph.proband];
   if (proband === undefined) return emptyLayout();
 
@@ -409,7 +427,9 @@ export function computePedigreeLayout(
 
   // Gen 0: proband + siblings (those sharing proband.childOf).
   const probandSibship =
-    proband.childOf === undefined ? [graph.proband] : findChildrenOfCouple(graph, proband.childOf);
+    proband.childOf === undefined
+      ? [graph.proband]
+      : [...findChildrenOfCouple(childrenByCouple, proband.childOf)];
   // Defensive: a well-formed graph from parse + infer always lists the
   // proband under their parent couple. Hand-built graphs may not — make
   // sure the proband is part of the row regardless.
@@ -455,6 +475,7 @@ export function computePedigreeLayout(
       // Gen -2: maternal grandparents
       layoutGrandparentSide({
         graph,
+        childrenByCouple,
         parentId: motherId,
         parentX: motherX,
         side: 'maternal',
@@ -469,6 +490,7 @@ export function computePedigreeLayout(
       // Gen -2: paternal grandparents
       layoutGrandparentSide({
         graph,
+        childrenByCouple,
         parentId: fatherId,
         parentX: fatherX,
         side: 'paternal',

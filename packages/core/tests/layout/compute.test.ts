@@ -78,6 +78,27 @@ describe('computePedigreeLayout — proband + parents (no aunts/uncles or grandp
     expect(nodeAt(out, 'inferred:mother-of:p')?.x).toBe(-30);
     expect(nodeAt(out, 'inferred:father-of:p')?.x).toBe(30);
   });
+
+  it('keeps larger sibling rows complete and centered', () => {
+    const g = inferRelationships(
+      parsePedigree(patient({ id: 'p' }), [
+        fmh({ id: 's1', patientId: 'p', relationship: 'NSIS' }),
+        fmh({ id: 's2', patientId: 'p', relationship: 'NBRO' }),
+        fmh({ id: 's3', patientId: 'p', relationship: 'NSIS' }),
+        fmh({ id: 's4', patientId: 'p', relationship: 'NBRO' }),
+        fmh({ id: 's5', patientId: 'p', relationship: 'NSIS' }),
+        fmh({ id: 's6', patientId: 'p', relationship: 'NBRO' }),
+      ]),
+    );
+    const out = computePedigreeLayout(g);
+    const siblingRow = out.nodes.filter((n) => n.y === Y0).map((n) => n.id);
+    const xs = out.nodes.filter((n) => n.y === Y0).map((n) => n.x);
+
+    expect(siblingRow).toEqual(['p', 's1', 's2', 's3', 's4', 's5', 's6']);
+    expect(xs).toEqual([-240, -160, -80, 0, 80, 160, 240]);
+    expect(nodeAt(out, 'inferred:mother-of:p')?.x).toBe(-30);
+    expect(nodeAt(out, 'inferred:father-of:p')?.x).toBe(30);
+  });
 });
 
 describe('computePedigreeLayout — full 3-generation', () => {

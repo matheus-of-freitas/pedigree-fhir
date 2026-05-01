@@ -40,6 +40,28 @@ describe('usePedigree', () => {
     const proband = result.current.layout.nodes.find((n) => n.id === 'p');
     expect(proband?.y).toBe(400);
   });
+
+  it('does not re-render for selection-only updates', () => {
+    const store = tinyStore();
+    let renders = 0;
+    const { result } = renderHook(
+      () => {
+        renders += 1;
+        return usePedigree();
+      },
+      { wrapper: withProvider(store) },
+    );
+
+    expect(renders).toBe(1);
+    const before = result.current.layout;
+
+    act(() => {
+      store.dispatch({ type: 'selectIndividual', id: 'p' });
+    });
+
+    expect(renders).toBe(1);
+    expect(result.current.layout).toBe(before);
+  });
 });
 
 describe('useNode', () => {
