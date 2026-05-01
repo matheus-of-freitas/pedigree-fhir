@@ -36,6 +36,7 @@ The package currently exports these main areas:
   - history helpers
 - `validation/*`
   - `defaultRegistry`
+  - `validateFhirInput`
   - custom registry composition
   - diagnostic/rule types
 
@@ -53,6 +54,7 @@ import {
   parsePedigree,
 } from '@pedigree/core';
 
+const inputDiagnostics = validateFhirInput(patient, familyHistory);
 const parsed = parsePedigree(patient, familyHistory);
 const graph = inferRelationships(parsed);
 
@@ -61,7 +63,7 @@ const store = createPedigreeStore({
   layoutOptions: {},
 });
 
-const diagnostics = defaultRegistry().validate(store.getState().graph);
+const graphDiagnostics = defaultRegistry().validate(store.getState().graph);
 ```
 
 ## Parsing and inference
@@ -119,14 +121,21 @@ The action surface includes:
 
 ## Validation
 
+Validation is split into two layers:
+
+1. `validateFhirInput(patient, familyHistory)` catches raw source-data issues that parsing may otherwise skip or normalize, such as missing IDs, duplicate IDs, dangling genetics references, malformed parent/sibling extensions, and patient-reference mismatches.
+2. `defaultRegistry().validate(graph)` runs graph-level pedigree rules after parsing and inference.
+
 The built-in validation registry currently includes:
 
 - completeness checks
 - sex/relationship consistency checks
 - cycle detection
 - unknown code detection
+- broken structural reference checks
+- twin-group consistency checks
 
-Use `defaultRegistry()` for the standard rule set, or `createRegistry()` to customize the active rules.
+Use `defaultRegistry()` for the standard graph rule set, or `createRegistry()` to customize the active rules.
 
 ## Design constraints
 

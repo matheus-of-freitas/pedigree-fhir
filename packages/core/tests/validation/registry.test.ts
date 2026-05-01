@@ -51,6 +51,13 @@ describe('defaultRegistry', () => {
       defaultRegistry()
         .list()
         .map((r) => r.id),
-    ).toEqual(['completeness', 'consistency/sex-relationship', 'cycles', 'unknown-codes']);
+    ).toEqual([
+      'completeness',
+      'consistency/sex-relationship',
+      'cycles',
+      'structure/broken-references',
+      'structure/twin-groups',
+      'unknown-codes',
+    ]);
   });
 });

@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { type PedigreeGraph, Provenance } from '../../src/model/types.js';
-import { Sex } from '../../src/psc/semantics.js';
+import { Sex, TwinType } from '../../src/psc/semantics.js';
+import { brokenReferencesRule } from '../../src/validation/rules/broken-references.js';
 import { completenessRule } from '../../src/validation/rules/completeness.js';
 import { sexRelationshipConsistencyRule } from '../../src/validation/rules/consistency.js';
 import { cyclesRule } from '../../src/validation/rules/cycles.js';
+import { twinGroupsRule } from '../../src/validation/rules/twin-groups.js';
 import { unknownCodesRule } from '../../src/validation/rules/unknown-codes.js';
 import { Severity } from '../../src/validation/types.js';
 import { couple, graph, individual } from './test-helpers.js';
@@ -270,5 +272,156 @@ describe('unknownCodesRule', () => {
         individualIds: ['unknown'],
       },
     ]);
+  });
+});
+
+describe('brokenReferencesRule', () => {
+  it('flags missing parent couples, missing partners, and duplicated couple partners', () => {
+    const g = graph({
+      proband: individual('p', { childOf: 'missing-couple', proband: true }),
+      relatives: [individual('known-partner', { sex: Sex.Female })],
+      couples: [
+        couple('broken-couple', ['known-partner', 'ghost-partner']),
+        couple('duplicated-partners', ['known-partner', 'known-partner']),
+      ],
+    });
+
+    expect(brokenReferencesRule.run(g).map((d) => d.code)).toEqual([
+      'structure/missing-parent-couple',
+      'structure/missing-partner',
+      'structure/duplicate-partner',
+    ]);
+  });
+
+  it('passes structurally sound graphs', () => {
+    const g = graph({
+      proband: individual('p', { childOf: 'parents', proband: true }),
+      relatives: [
+        individual('mother', { sex: Sex.Female }),
+        individual('father', { sex: Sex.Male }),
+      ],
+      couples: [couple('parents', ['mother', 'father'])],
+    });
+
+    expect(brokenReferencesRule.run(g)).toEqual([]);
+  });
+});
+
+describe('twinGroupsRule', () => {
+  it('passes consistent twin groups', () => {
+    const twinA = {
+      ...individual('t1', { childOf: 'parents', sex: Sex.Female }),
+      twinGroupId: 'tg',
+      semantics: {
+        ...individual('t1', { childOf: 'parents', sex: Sex.Female }).semantics,
+        twin: TwinType.Dizygotic,
+      },
+    };
+    const twinB = {
+      ...individual('t2', { childOf: 'parents', sex: Sex.Male }),
+      twinGroupId: 'tg',
+      semantics: {
+        ...individual('t2', { childOf: 'parents', sex: Sex.Male }).semantics,
+        twin: TwinType.Dizygotic,
+      },
+    };
+    const g = graph({
+      proband: individual('p', { childOf: 'parents', proband: true }),
+      relatives: [
+        twinA,
+        twinB,
+        individual('mother', { sex: Sex.Female }),
+        individual('father', { sex: Sex.Male }),
+      ],
+      couples: [couple('parents', ['mother', 'father'])],
+    });
+
+    expect(twinGroupsRule.run(g)).toEqual([]);
+  });
+
+  it('flags singleton, parent-mismatched, missing-type, and mixed-type twin groups', () => {
+    const singleton = {
+      ...individual('singleton', { childOf: 'parents', sex: Sex.Female }),
+      twinGroupId: 'single',
+      semantics: {
+        ...individual('singleton', { childOf: 'parents', sex: Sex.Female }).semantics,
+        twin: TwinType.UnknownZygosity,
+      },
+    };
+    const mixedA = {
+      ...individual('mixed-a', { childOf: 'parents', sex: Sex.Female }),
+      twinGroupId: 'mixed',
+      semantics: {
+        ...individual('mixed-a', { childOf: 'parents', sex: Sex.Female }).semantics,
+        twin: TwinType.None,
+      },
+    };
+    const mixedB = {
+      ...individual('mixed-b', { childOf: 'other-parents', sex: Sex.Male }),
+      twinGroupId: 'mixed',
+      semantics: {
+        ...individual('mixed-b', { childOf: 'other-parents', sex: Sex.Male }).semantics,
+        twin: TwinType.Monozygotic,
+      },
+    };
+    const mixedC = {
+      ...individual('mixed-c', { childOf: 'parents', sex: Sex.Male }),
+      twinGroupId: 'mixed',
+      semantics: {
+        ...individual('mixed-c', { childOf: 'parents', sex: Sex.Male }).semantics,
+        twin: TwinType.Dizygotic,
+      },
+    };
+
+    const g = graph({
+      proband: individual('p', { childOf: 'parents', proband: true }),
+      relatives: [
+        singleton,
+        mixedA,
+        mixedB,
+        mixedC,
+        individual('mother', { sex: Sex.Female }),
+        individual('father', { sex: Sex.Male }),
+        individual('other-mother', { sex: Sex.Female }),
+        individual('other-father', { sex: Sex.Male }),
+      ],
+      couples: [
+        couple('parents', ['mother', 'father']),
+        couple('other-parents', ['other-mother', 'other-father']),
+      ],
+    });
+
+    expect(twinGroupsRule.run(g).map((d) => d.code)).toEqual([
+      'structure/twin-group-singleton',
+      'structure/twin-group-parent-mismatch',
+      'structure/twin-group-missing-type',
+      'structure/twin-group-type-mismatch',
+    ]);
+  });
+
+  it('accepts twin groups whose parents are not yet assigned', () => {
+    const g = graph({
+      proband: individual('p', { proband: true }),
+      relatives: [
+        {
+          ...individual('t1', { sex: Sex.Female }),
+          twinGroupId: 'tg',
+          semantics: {
+            ...individual('t1', { sex: Sex.Female }).semantics,
+            twin: TwinType.Monozygotic,
+          },
+        },
+        {
+          ...individual('t2', { sex: Sex.Male }),
+          twinGroupId: 'tg',
+          semantics: {
+            ...individual('t2', { sex: Sex.Male }).semantics,
+            twin: TwinType.Monozygotic,
+          },
+        },
+      ],
+    });
+
+    expect(twinGroupsRule.run(g)).toEqual([]);
   });
 });

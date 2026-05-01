@@ -30,6 +30,7 @@ It is intentionally not a prebuilt chart widget.
 - `useCompact`
 - `useEditor`
 - `useValidation`
+- `useInputValidation`
 
 ### Primitives
 
@@ -118,7 +119,8 @@ That pattern is what keeps the package theme-free: the library gives you topolog
 ### Editing and validation
 
 - `useEditor()`: semantic edits, graph edits, couple edits, undo, redo
-- `useValidation(registry?)`: diagnostics for the current graph
+- `useValidation(registry?)`: graph-level diagnostics for the current pedigree store
+- `useInputValidation(patient, familyHistory)`: raw-FHIR diagnostics before parsing/inference
 
 ## Design constraints
 

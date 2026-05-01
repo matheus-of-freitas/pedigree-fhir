@@ -7,6 +7,16 @@ export const Severity = {
 } as const;
 export type Severity = (typeof Severity)[keyof typeof Severity];
 
+export interface DiagnosticResourceRef {
+  resourceType: 'Patient' | 'FamilyMemberHistory';
+  /** Resource id when known. Missing FMHs may not have one. */
+  id?: string;
+  /** Optional human-readable location such as `familyHistory[2]`. */
+  path?: string;
+  /** Optional FHIR reference string involved in the diagnostic. */
+  reference?: string;
+}
+
 export interface Diagnostic {
   /** Stable machine-readable code, e.g. `'completeness/missing-grandparent'`. */
   code: string;
@@ -17,6 +27,8 @@ export interface Diagnostic {
   individualIds: readonly IndividualId[];
   /** Couples related to this diagnostic, when applicable. */
   coupleIds?: readonly CoupleId[];
+  /** Raw FHIR resources related to this diagnostic, when applicable. */
+  resourceRefs?: readonly DiagnosticResourceRef[];
 }
 
 export interface Rule {

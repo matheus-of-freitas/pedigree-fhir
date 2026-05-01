@@ -6,7 +6,15 @@ import {
   inferRelationships,
   parsePedigree,
 } from '@pedigree/core';
-import { Edge, Node, Pedigree, PedigreeProvider, Sibship, useValidation } from '@pedigree/react';
+import {
+  Edge,
+  Node,
+  Pedigree,
+  PedigreeProvider,
+  Sibship,
+  useInputValidation,
+  useValidation,
+} from '@pedigree/react';
 import { type ReactNode, useMemo } from 'react';
 import type { Fixture } from '../fixtures/three-gen.js';
 
@@ -17,6 +25,10 @@ export interface ValidationPedigreeViewProps {
 }
 
 export function ValidationPedigreeView({ fixture }: ValidationPedigreeViewProps) {
+  const { diagnostics: inputDiagnostics } = useInputValidation(
+    fixture.patient,
+    fixture.familyHistory,
+  );
   const store = useMemo(() => {
     const graph = inferRelationships(parsePedigree(fixture.patient, fixture.familyHistory));
     return createPedigreeStore({ graph, layoutOptions: {} });
@@ -36,15 +48,16 @@ export function ValidationPedigreeView({ fixture }: ValidationPedigreeViewProps)
           <ValidationSvg />
         </div>
         <div style={{ flex: '0 1 360px', minWidth: 280 }}>
-          <ValidationPanel />
+          <ValidationPanel inputDiagnostics={inputDiagnostics} />
         </div>
       </div>
     </PedigreeProvider>
   );
 }
 
-function ValidationPanel() {
+function ValidationPanel({ inputDiagnostics }: { inputDiagnostics: readonly Diagnostic[] }) {
   const { diagnostics } = useValidation();
+  const total = inputDiagnostics.length + diagnostics.length;
 
   return (
     <section
@@ -61,19 +74,60 @@ function ValidationPanel() {
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
         <h2 style={{ margin: 0, fontSize: 16, lineHeight: 1.2 }}>Diagnostics</h2>
         <span data-testid="diagnostic-count" style={{ fontSize: 13, opacity: 0.75 }}>
-          {diagnostics.length}
+          {total}
         </span>
       </div>
-      {diagnostics.length === 0 ? (
+      {total === 0 ? (
         <p data-testid="diagnostic-empty" style={{ margin: 0, fontSize: 14 }}>
           No diagnostics
         </p>
       ) : (
-        <ol data-testid="diagnostic-list" style={{ margin: 0, paddingLeft: 20 }}>
+        <div style={{ display: 'grid', gap: 14 }}>
+          <DiagnosticSection
+            title="Source data"
+            diagnostics={inputDiagnostics}
+            countTestId="input-diagnostic-count"
+            listTestId="input-diagnostic-list"
+            testIdPrefix="input-diagnostic"
+          />
+          <DiagnosticSection
+            title="Pedigree graph"
+            diagnostics={diagnostics}
+            countTestId="graph-diagnostic-count"
+            listTestId="graph-diagnostic-list"
+            testIdPrefix="diagnostic"
+          />
+        </div>
+      )}
+    </section>
+  );
+}
+
+function DiagnosticSection(props: {
+  title: string;
+  diagnostics: readonly Diagnostic[];
+  countTestId: string;
+  listTestId: string;
+  testIdPrefix: string;
+}) {
+  const { title, diagnostics, countTestId, listTestId, testIdPrefix } = props;
+  return (
+    <section aria-label={title}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
+        <h3 style={{ margin: 0, fontSize: 14 }}>{title}</h3>
+        <span data-testid={countTestId} style={{ fontSize: 12, opacity: 0.75 }}>
+          {diagnostics.length}
+        </span>
+      </div>
+      {diagnostics.length === 0 ? (
+        <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>No diagnostics</p>
+      ) : (
+        <ol data-testid={listTestId} style={{ margin: 0, paddingLeft: 20 }}>
           {diagnostics.map((diagnostic) => (
             <DiagnosticItem
-              key={`${diagnostic.code}:${diagnostic.individualIds.join(',')}`}
+              key={`${testIdPrefix}:${diagnostic.code}:${diagnostic.individualIds.join(',')}:${diagnostic.resourceRefs?.map((r) => r.path ?? r.reference ?? r.id ?? '').join(',') ?? ''}`}
               diagnostic={diagnostic}
+              testId={diagnosticTestId(testIdPrefix, diagnostic.code)}
             />
           ))}
         </ol>
@@ -82,10 +136,10 @@ function ValidationPanel() {
   );
 }
 
-function DiagnosticItem({ diagnostic }: { diagnostic: Diagnostic }) {
+function DiagnosticItem({ diagnostic, testId }: { diagnostic: Diagnostic; testId: string }) {
   return (
     <li
-      data-testid={diagnosticTestId(diagnostic.code)}
+      data-testid={testId}
       style={{
         marginBottom: 10,
         fontSize: 13,
@@ -101,12 +155,19 @@ function DiagnosticItem({ diagnostic }: { diagnostic: Diagnostic }) {
           {diagnostic.individualIds.join(', ')}
         </code>
       )}
+      {diagnostic.resourceRefs !== undefined && diagnostic.resourceRefs.length > 0 && (
+        <code style={{ display: 'block', marginTop: 4, fontSize: 12 }}>
+          {diagnostic.resourceRefs
+            .map((ref) => ref.path ?? ref.reference ?? ref.id ?? ref.resourceType)
+            .join(', ')}
+        </code>
+      )}
     </li>
   );
 }
 
-function diagnosticTestId(code: string): string {
-  return `diagnostic-${code
+function diagnosticTestId(prefix: string, code: string): string {
+  return `${prefix}-${code
     .replace(/[^a-z0-9]+/gi, '-')
     .replace(/^-|-$/g, '')
     .toLowerCase()}`;

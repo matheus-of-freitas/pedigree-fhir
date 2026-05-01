@@ -4,6 +4,8 @@ const V3_FAMILY = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
 const V3_ROLE = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
 const ADMIN_GENDER = 'http://hl7.org/fhir/administrative-gender';
 const PARENT_EXT = 'http://hl7.org/fhir/StructureDefinition/family-member-history-genetics-parent';
+const SIBLING_EXT =
+  'http://hl7.org/fhir/StructureDefinition/family-member-history-genetics-sibling';
 
 function rel(code: string): fhir4.CodeableConcept {
   return { coding: [{ system: V3_FAMILY, code }] };
@@ -21,6 +23,19 @@ function parentExt(ref: string, role: 'NMTH' | 'NFTH'): fhir4.Extension {
       {
         url: 'type',
         valueCodeableConcept: { coding: [{ system: V3_ROLE, code: role }] },
+      },
+    ],
+  };
+}
+
+function siblingExt(ref?: string): fhir4.Extension {
+  return {
+    url: SIBLING_EXT,
+    extension: [
+      ...(ref === undefined ? [] : [{ url: 'reference', valueReference: { reference: ref } }]),
+      {
+        url: 'type',
+        valueCodeableConcept: { coding: [{ system: V3_ROLE, code: 'TWIN' }] },
       },
     ],
   };
@@ -195,6 +210,63 @@ export const incomplete: Fixture = {
       relationship: rel('MTH'),
       // Intentional sex mismatch — MTH should be female; validation will flag.
       sex: sex('male'),
+    },
+  ],
+};
+
+/**
+ * Malformed raw FHIR input: mismatched patient refs, duplicate/missing ids,
+ * malformed genetics extensions, and self/unknown sibling references.
+ * Parsing still produces a partial graph, but input validation should surface
+ * the source-data problems explicitly.
+ */
+export const malformedInput: Fixture = {
+  patient: { resourceType: 'Patient', id: 'proband', gender: 'female' },
+  familyHistory: [
+    {
+      resourceType: 'FamilyMemberHistory',
+      id: 'mother',
+      status: 'completed',
+      patient: { reference: 'Patient/elsewhere' },
+      relationship: { coding: [] },
+      sex: sex('female'),
+      extension: [
+        {
+          url: PARENT_EXT,
+          extension: [
+            { url: 'type', valueCodeableConcept: { coding: [{ system: V3_ROLE, code: 'NMTH' }] } },
+          ],
+        },
+        parentExt('FamilyMemberHistory/ghost', 'NMTH'),
+        parentExt('FamilyMemberHistory/mother', 'NFTH'),
+      ],
+    },
+    {
+      resourceType: 'FamilyMemberHistory',
+      id: 'mother',
+      status: 'completed',
+      patient: { reference: 'Patient/proband' },
+      relationship: rel('MTH'),
+      sex: sex('female'),
+    },
+    {
+      resourceType: 'FamilyMemberHistory',
+      id: 'sister',
+      status: 'completed',
+      patient: { reference: 'Patient/proband' },
+      relationship: rel('NSIS'),
+      sex: sex('female'),
+      extension: [
+        siblingExt(),
+        siblingExt('FamilyMemberHistory/ghost'),
+        siblingExt('FamilyMemberHistory/sister'),
+      ],
+    },
+    {
+      resourceType: 'FamilyMemberHistory',
+      status: 'completed',
+      patient: { reference: 'Patient/proband' },
+      relationship: rel('MAUNT'),
     },
   ],
 };

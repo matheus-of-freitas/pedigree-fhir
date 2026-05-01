@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { PedigreeProvider } from '../src/context.js';
 import { useEditor } from '../src/hooks/useEditor.js';
+import { useInputValidation } from '../src/hooks/useInputValidation.js';
 import { useValidation } from '../src/hooks/useValidation.js';
 import { tinyStore } from './fixtures/graph.js';
 
@@ -67,6 +68,28 @@ describe('useValidation', () => {
         message: 'custom',
         individualIds: [],
       },
+    ]);
+  });
+});
+
+describe('useInputValidation', () => {
+  it('runs raw-FHIR validation without requiring a store', () => {
+    const patient = { resourceType: 'Patient', id: 'p' } as fhir4.Patient;
+    const familyHistory: fhir4.FamilyMemberHistory[] = [
+      {
+        resourceType: 'FamilyMemberHistory',
+        id: 'm',
+        status: 'completed',
+        patient: { reference: 'Patient/other' },
+        relationship: { coding: [] },
+      },
+    ];
+
+    const { result } = renderHook(() => useInputValidation(patient, familyHistory));
+
+    expect(result.current.diagnostics.map((d) => d.code)).toEqual([
+      'input/fmh-patient-reference-mismatch',
+      'input/relationship-missing',
     ]);
   });
 });

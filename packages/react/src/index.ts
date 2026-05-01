@@ -15,6 +15,8 @@ export { useEditor } from './hooks/useEditor.js';
 export type { UseEditorResult } from './hooks/useEditor.js';
 export { useValidation } from './hooks/useValidation.js';
 export type { UseValidationResult } from './hooks/useValidation.js';
+export { useInputValidation } from './hooks/useInputValidation.js';
+export type { UseInputValidationResult } from './hooks/useInputValidation.js';
 
 export { Pedigree } from './primitives/Pedigree.js';
 export type { PedigreeProps } from './primitives/Pedigree.js';
