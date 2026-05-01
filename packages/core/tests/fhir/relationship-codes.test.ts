@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   FamilySide,
+  getRelationshipDisplay,
   getRelationshipMetadata,
   listRelationshipCodes,
+  resolveIndividualDisplayLabel,
 } from '../../src/fhir/relationship-codes.js';
 import { Sex } from '../../src/psc/semantics.js';
 
@@ -81,5 +83,38 @@ describe('listRelationshipCodes', () => {
   it('has unique codes (no accidental duplicates)', () => {
     const codes = listRelationshipCodes().map((m) => m.code);
     expect(new Set(codes).size).toBe(codes.length);
+  });
+});
+
+describe('getRelationshipDisplay', () => {
+  it('returns the readable display for known codes', () => {
+    expect(getRelationshipDisplay('MTH')).toBe('mother');
+    expect(getRelationshipDisplay('NSIS')).toBe('natural sister');
+  });
+
+  it('returns undefined for unknown or missing codes', () => {
+    expect(getRelationshipDisplay('NOPE')).toBeUndefined();
+    expect(getRelationshipDisplay(undefined)).toBeUndefined();
+  });
+});
+
+describe('resolveIndividualDisplayLabel', () => {
+  it('defaults to consumer name only', () => {
+    expect(resolveIndividualDisplayLabel({ name: 'Ada Byron', relationshipToProband: 'MTH' })).toBe(
+      'Ada Byron',
+    );
+    expect(resolveIndividualDisplayLabel({ relationshipToProband: 'MTH' })).toBeUndefined();
+  });
+
+  it('can prefer the relationship label while falling back to name', () => {
+    expect(
+      resolveIndividualDisplayLabel(
+        { name: 'Ada Byron', relationshipToProband: 'MTH' },
+        { preferRelationshipLabel: true },
+      ),
+    ).toBe('mother');
+    expect(
+      resolveIndividualDisplayLabel({ name: 'Ada Byron' }, { preferRelationshipLabel: true }),
+    ).toBe('Ada Byron');
   });
 });

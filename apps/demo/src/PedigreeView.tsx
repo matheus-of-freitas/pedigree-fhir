@@ -1,9 +1,18 @@
-import { Sex, VitalStatus } from '@pedigree/core';
+import {
+  Sex,
+  VitalStatus,
+  computeNodeLabelMaxWidths,
+  computeNodeLabelXOffsets,
+  computeParentDropStemLabelObstacles,
+  resolveIndividualDisplayLabel,
+} from '@pedigree/core';
 import { Edge, Node, Pedigree, Sibship } from '@pedigree/react';
+import { NodeLabel } from './NodeLabel.js';
 
 export interface PedigreeViewProps {
   /** Visual theme — "minimal" or "themed". The library doesn't ship either; both live here in the demo. */
   variant: 'minimal' | 'themed';
+  showRelativeLabels?: boolean;
 }
 
 const NODE_SIZE = 40;
@@ -67,11 +76,39 @@ function IndividualGlyph(props: {
   );
 }
 
-export function PedigreeView({ variant }: PedigreeViewProps) {
+export function PedigreeView({ variant, showRelativeLabels = false }: PedigreeViewProps) {
   return (
     <Pedigree>
       {({ layout, graph }) => {
         const { minX, minY, width, height } = layout.bounds;
+        const labels = new Map(
+          layout.nodes.map((node) => {
+            const individual = graph.individuals[node.id];
+            return [
+              node.id,
+              individual === undefined
+                ? undefined
+                : resolveIndividualDisplayLabel(individual, {
+                    preferRelationshipLabel: showRelativeLabels,
+                  }),
+            ];
+          }),
+        );
+        const labelObstacles = computeParentDropStemLabelObstacles(
+          layout.partnerEdges,
+          layout.parentDrops,
+        );
+        const labelWidths = computeNodeLabelMaxWidths(layout.nodes, {
+          obstacles: labelObstacles,
+        });
+        const labelOffsets = computeNodeLabelXOffsets(
+          layout.nodes.map((node) => ({
+            ...node,
+            label: labels.get(node.id),
+            maxWidth: labelWidths.get(node.id),
+          })),
+          { fontSize: 10, obstacles: labelObstacles },
+        );
         return (
           <svg
             viewBox={`${minX - 30} ${minY - 30} ${width + 60} ${height + 60}`}
@@ -124,16 +161,14 @@ export function PedigreeView({ variant }: PedigreeViewProps) {
                         proband={individual.id === graph.proband}
                         variant={variant}
                       />
-                      {individual.name !== undefined && (
-                        <text
-                          y={NODE_SIZE / 2 + 14}
-                          textAnchor="middle"
-                          fontSize={10}
-                          fill={variant === 'themed' ? '#7c2d12' : 'black'}
-                        >
-                          {individual.name}
-                        </text>
-                      )}
+                      <NodeLabel
+                        label={labels.get(individual.id)}
+                        maxWidth={labelWidths.get(individual.id)}
+                        x={labelOffsets.get(individual.id) ?? 0}
+                        y={NODE_SIZE / 2 + 14}
+                        fontSize={10}
+                        fill={variant === 'themed' ? '#7c2d12' : 'black'}
+                      />
                     </g>
                   );
                 }}

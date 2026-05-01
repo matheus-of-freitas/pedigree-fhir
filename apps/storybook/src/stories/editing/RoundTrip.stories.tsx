@@ -1,6 +1,8 @@
 import {
   Sex,
   VitalStatus,
+  computeNodeLabelMaxWidths,
+  computeNodeLabelXOffsets,
   createPedigreeStore,
   inferRelationships,
   parsePedigree,
@@ -17,6 +19,7 @@ import {
 } from '@pedigree/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { type ReactNode, useMemo, useState } from 'react';
+import { NodeLabel } from '../../components/NodeLabel.js';
 import { threeGen } from '../../fixtures/three-gen.js';
 
 const NODE_SIZE = 40;
@@ -103,6 +106,18 @@ function RoundTripSvg() {
     <Pedigree>
       {({ graph, layout }) => {
         const { minX, minY, width, height } = layout.bounds;
+        const labels = new Map(
+          layout.nodes.map((node) => [node.id, graph.individuals[node.id]?.name]),
+        );
+        const labelWidths = computeNodeLabelMaxWidths(layout.nodes);
+        const labelOffsets = computeNodeLabelXOffsets(
+          layout.nodes.map((node) => ({
+            ...node,
+            label: labels.get(node.id),
+            maxWidth: labelWidths.get(node.id),
+          })),
+          { fontSize: 11 },
+        );
         return (
           <svg
             viewBox={`${minX - 30} ${minY - 30} ${width + 60} ${height + 60}`}
@@ -151,7 +166,9 @@ function RoundTripSvg() {
                     vital={individual.semantics.vital}
                     affected={individual.semantics.conditions.some((c) => c.status === 'affected')}
                     proband={individual.id === graph.proband}
-                    label={individual.name}
+                    label={labels.get(individual.id)}
+                    labelMaxWidth={labelWidths.get(individual.id)}
+                    labelOffsetX={labelOffsets.get(individual.id) ?? 0}
                   />
                 )}
               </Node>
@@ -172,8 +189,10 @@ function Glyph(props: {
   affected: boolean;
   proband: boolean;
   label: string | undefined;
+  labelMaxWidth: number | undefined;
+  labelOffsetX: number;
 }): ReactNode {
-  const { id, x, y, sex, vital, affected, proband, label } = props;
+  const { id, x, y, sex, vital, affected, proband, label, labelMaxWidth, labelOffsetX } = props;
   const half = NODE_SIZE / 2;
   const fill = affected ? 'var(--pedigree-affected)' : 'var(--pedigree-fill)';
   const stroke = proband ? 'var(--pedigree-proband)' : 'var(--pedigree-stroke)';
@@ -224,11 +243,14 @@ function Glyph(props: {
           fill={stroke}
         />
       )}
-      {label !== undefined && (
-        <text y={half + 18} textAnchor="middle" fontSize={11} fill="var(--pedigree-text)">
-          {label}
-        </text>
-      )}
+      <NodeLabel
+        label={label}
+        maxWidth={labelMaxWidth}
+        x={labelOffsetX}
+        y={half + 18}
+        fontSize={11}
+        fill="var(--pedigree-text)"
+      />
     </g>
   );
 }

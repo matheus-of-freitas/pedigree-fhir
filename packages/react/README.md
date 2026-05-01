@@ -66,6 +66,7 @@ The package centers around `Pedigree`, which gives you the current graph and lay
 
 ```tsx
 import { Edge, Node, Pedigree, PedigreeProvider, Sibship } from '@pedigree/react';
+import { resolveIndividualDisplayLabel } from '@pedigree/core';
 
 <PedigreeProvider store={store}>
   <Pedigree>
@@ -89,7 +90,11 @@ import { Edge, Node, Pedigree, PedigreeProvider, Sibship } from '@pedigree/react
           <Node key={node.id} id={node.id}>
             {({ individual, position }) => (
               <g transform={`translate(${position.x}, ${position.y})`}>
-                <text>{individual.name ?? individual.id}</text>
+                <text>
+                  {resolveIndividualDisplayLabel(individual, {
+                    preferRelationshipLabel: true,
+                  }) ?? individual.id}
+                </text>
               </g>
             )}
           </Node>

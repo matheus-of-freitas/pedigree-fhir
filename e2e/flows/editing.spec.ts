@@ -30,6 +30,16 @@ test.describe('add relative', () => {
     expect(after).toBe(before + 2);
   });
 
+  test('relative labels can be enabled beneath nodes', async ({ page }) => {
+    await page.goto(
+      `${SB}/iframe.html?id=editing-add-relative--add-sibling-or-child-with-relative-labels&viewMode=story&globals=theme:minimal`,
+    );
+    await page.getByTestId('node-proband').waitFor({ state: 'visible' });
+    await expect(page.getByText('mother', { exact: true })).toBeVisible();
+    await expect(page.getByText('father', { exact: true })).toBeVisible();
+    await expect(page.getByText('natural sister', { exact: true })).toBeVisible();
+  });
+
   test('action buttons stay disabled until a node is selected', async ({ page }) => {
     await page.goto(
       `${SB}/iframe.html?id=editing-add-relative--add-sibling-or-child&viewMode=story&globals=theme:minimal`,

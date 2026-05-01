@@ -20,3 +20,7 @@ export default meta;
 export const AddSiblingOrChild: StoryObj<typeof EditingPedigreeView> = {
   args: { fixture: threeGen },
 };
+
+export const AddSiblingOrChildWithRelativeLabels: StoryObj<typeof EditingPedigreeView> = {
+  args: { fixture: threeGen, showRelativeLabels: true },
+};

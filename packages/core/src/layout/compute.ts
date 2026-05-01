@@ -282,7 +282,8 @@ function buildParentDrop(
   individuals: Record<IndividualId, Individual>,
   nodeSize: number,
 ): ParentDrop {
-  const sibY = (partnerY + childY) / 2;
+  const childTopY = childY - nodeSize / 2;
+  const sibY = partnerY + (childTopY - partnerY) * 0.7;
   // All children passed are positioned by the caller; the `?? midX` fallback
   // exists only to satisfy noUncheckedIndexedAccess on the optional chain.
   /* v8 ignore next */
@@ -305,7 +306,6 @@ function buildParentDrop(
     twinGroups.set(ind.twinGroupId, existing);
   }
 
-  const childTopY = childY - nodeSize / 2;
   const twinJunctions: TwinJunction[] = [];
   const handledTwinGroups = new Set<string>();
 

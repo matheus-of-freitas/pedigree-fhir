@@ -2,9 +2,13 @@ import {
   type Diagnostic,
   Sex,
   VitalStatus,
+  computeNodeLabelMaxWidths,
+  computeNodeLabelXOffsets,
+  computeParentDropStemLabelObstacles,
   createPedigreeStore,
   inferRelationships,
   parsePedigree,
+  resolveIndividualDisplayLabel,
 } from '@pedigree/core';
 import {
   Edge,
@@ -17,14 +21,19 @@ import {
 } from '@pedigree/react';
 import { type ReactNode, useMemo } from 'react';
 import type { Fixture } from '../fixtures/three-gen.js';
+import { NodeLabel } from './NodeLabel.js';
 
 const NODE_SIZE = 40;
 
 export interface ValidationPedigreeViewProps {
   fixture: Fixture;
+  showRelativeLabels?: boolean;
 }
 
-export function ValidationPedigreeView({ fixture }: ValidationPedigreeViewProps) {
+export function ValidationPedigreeView({
+  fixture,
+  showRelativeLabels = false,
+}: ValidationPedigreeViewProps) {
   const { diagnostics: inputDiagnostics } = useInputValidation(
     fixture.patient,
     fixture.familyHistory,
@@ -45,7 +54,7 @@ export function ValidationPedigreeView({ fixture }: ValidationPedigreeViewProps)
         }}
       >
         <div style={{ flex: '1 1 520px', minWidth: 320 }}>
-          <ValidationSvg />
+          <ValidationSvg showRelativeLabels={showRelativeLabels} />
         </div>
         <div style={{ flex: '0 1 360px', minWidth: 280 }}>
           <ValidationPanel inputDiagnostics={inputDiagnostics} />
@@ -179,11 +188,39 @@ function severityColor(severity: Diagnostic['severity']): string {
   return 'var(--pedigree-text)';
 }
 
-function ValidationSvg() {
+function ValidationSvg({ showRelativeLabels }: { showRelativeLabels: boolean }) {
   return (
     <Pedigree>
       {({ graph, layout }) => {
         const { minX, minY, width, height } = layout.bounds;
+        const labels = new Map(
+          layout.nodes.map((node) => {
+            const individual = graph.individuals[node.id];
+            return [
+              node.id,
+              individual === undefined
+                ? undefined
+                : resolveIndividualDisplayLabel(individual, {
+                    preferRelationshipLabel: showRelativeLabels,
+                  }),
+            ];
+          }),
+        );
+        const labelObstacles = computeParentDropStemLabelObstacles(
+          layout.partnerEdges,
+          layout.parentDrops,
+        );
+        const labelWidths = computeNodeLabelMaxWidths(layout.nodes, {
+          obstacles: labelObstacles,
+        });
+        const labelOffsets = computeNodeLabelXOffsets(
+          layout.nodes.map((node) => ({
+            ...node,
+            label: labels.get(node.id),
+            maxWidth: labelWidths.get(node.id),
+          })),
+          { fontSize: 11, obstacles: labelObstacles },
+        );
         return (
           <svg
             viewBox={`${minX - 30} ${minY - 30} ${width + 60} ${height + 60}`}
@@ -231,7 +268,9 @@ function ValidationSvg() {
                     vital={individual.semantics.vital}
                     affected={individual.semantics.conditions.some((c) => c.status === 'affected')}
                     proband={individual.id === graph.proband}
-                    label={individual.name}
+                    label={labels.get(individual.id)}
+                    labelMaxWidth={labelWidths.get(individual.id)}
+                    labelOffsetX={labelOffsets.get(individual.id) ?? 0}
                   />
                 )}
               </Node>
@@ -251,8 +290,10 @@ function Glyph(props: {
   affected: boolean;
   proband: boolean;
   label: string | undefined;
+  labelMaxWidth: number | undefined;
+  labelOffsetX: number;
 }): ReactNode {
-  const { x, y, sex, vital, affected, proband, label } = props;
+  const { x, y, sex, vital, affected, proband, label, labelMaxWidth, labelOffsetX } = props;
   const half = NODE_SIZE / 2;
   const fill = affected ? 'var(--pedigree-affected)' : 'var(--pedigree-fill)';
   const stroke = proband ? 'var(--pedigree-proband)' : 'var(--pedigree-stroke)';
@@ -303,11 +344,14 @@ function Glyph(props: {
           fill={stroke}
         />
       )}
-      {label !== undefined && (
-        <text y={half + 18} textAnchor="middle" fontSize={11} fill="var(--pedigree-text)">
-          {label}
-        </text>
-      )}
+      <NodeLabel
+        label={label}
+        maxWidth={labelMaxWidth}
+        x={labelOffsetX}
+        y={half + 18}
+        fontSize={11}
+        fill="var(--pedigree-text)"
+      />
     </g>
   );
 }

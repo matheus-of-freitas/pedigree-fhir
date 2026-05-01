@@ -1,14 +1,26 @@
-import { Adopted, type PedigreeGraph, Sex, VitalStatus, createPedigreeStore } from '@pedigree/core';
+import {
+  Adopted,
+  type PedigreeGraph,
+  Sex,
+  VitalStatus,
+  computeNodeLabelMaxWidths,
+  computeNodeLabelXOffsets,
+  computeParentDropStemLabelObstacles,
+  createPedigreeStore,
+  resolveIndividualDisplayLabel,
+} from '@pedigree/core';
 import { Edge, Node, Pedigree, PedigreeProvider, Sibship } from '@pedigree/react';
 import { type ReactNode, useMemo } from 'react';
+import { NodeLabel } from './NodeLabel.js';
 
 const NODE_SIZE = 40;
 
 export interface PscPedigreeViewProps {
   graph: PedigreeGraph;
+  showRelativeLabels?: boolean;
 }
 
-export function PscPedigreeView({ graph }: PscPedigreeViewProps) {
+export function PscPedigreeView({ graph, showRelativeLabels = false }: PscPedigreeViewProps) {
   const store = useMemo(() => createPedigreeStore({ graph, layoutOptions: {} }), [graph]);
 
   return (
@@ -16,6 +28,34 @@ export function PscPedigreeView({ graph }: PscPedigreeViewProps) {
       <Pedigree>
         {({ graph: currentGraph, layout }) => {
           const { minX, minY, width, height } = layout.bounds;
+          const labels = new Map(
+            layout.nodes.map((node) => {
+              const individual = currentGraph.individuals[node.id];
+              return [
+                node.id,
+                individual === undefined
+                  ? undefined
+                  : resolveIndividualDisplayLabel(individual, {
+                      preferRelationshipLabel: showRelativeLabels,
+                    }),
+              ];
+            }),
+          );
+          const labelObstacles = computeParentDropStemLabelObstacles(
+            layout.partnerEdges,
+            layout.parentDrops,
+          );
+          const labelWidths = computeNodeLabelMaxWidths(layout.nodes, {
+            obstacles: labelObstacles,
+          });
+          const labelOffsets = computeNodeLabelXOffsets(
+            layout.nodes.map((node) => ({
+              ...node,
+              label: labels.get(node.id),
+              maxWidth: labelWidths.get(node.id),
+            })),
+            { fontSize: 11, obstacles: labelObstacles },
+          );
           return (
             <svg
               viewBox={`${minX - 36} ${minY - 36} ${width + 72} ${height + 86}`}
@@ -71,7 +111,9 @@ export function PscPedigreeView({ graph }: PscPedigreeViewProps) {
                         (c) => c.status === 'affected',
                       )}
                       proband={individual.id === currentGraph.proband}
-                      label={individual.name}
+                      label={labels.get(individual.id)}
+                      labelMaxWidth={labelWidths.get(individual.id)}
+                      labelOffsetX={labelOffsets.get(individual.id) ?? 0}
                     />
                   )}
                 </Node>
@@ -94,8 +136,11 @@ function PscGlyph(props: {
   affected: boolean;
   proband: boolean;
   label: string | undefined;
+  labelMaxWidth: number | undefined;
+  labelOffsetX: number;
 }): ReactNode {
-  const { id, x, y, sex, vital, adopted, affected, proband, label } = props;
+  const { id, x, y, sex, vital, adopted, affected, proband, label, labelMaxWidth, labelOffsetX } =
+    props;
   const half = NODE_SIZE / 2;
   const fill = affected ? 'var(--pedigree-affected)' : 'var(--pedigree-fill)';
   const stroke = proband ? 'var(--pedigree-proband)' : 'var(--pedigree-stroke)';
@@ -117,11 +162,14 @@ function PscGlyph(props: {
           fill={stroke}
         />
       )}
-      {label !== undefined && (
-        <text y={half + 18} textAnchor="middle" fontSize={11} fill="var(--pedigree-text)">
-          {label}
-        </text>
-      )}
+      <NodeLabel
+        label={label}
+        maxWidth={labelMaxWidth}
+        x={labelOffsetX}
+        y={half + 18}
+        fontSize={11}
+        fill="var(--pedigree-text)"
+      />
     </g>
   );
 }

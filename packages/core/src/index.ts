@@ -8,6 +8,7 @@ export * from './fhir/types.js';
 export * from './fhir/parse.js';
 export * from './fhir/serialize.js';
 export * from './layout/types.js';
+export * from './layout/labels.js';
 export * from './layout/compute.js';
 export * from './state/store.js';
 export * from './state/edits.js';

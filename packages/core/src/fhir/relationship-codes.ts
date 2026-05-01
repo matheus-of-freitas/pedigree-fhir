@@ -1,3 +1,4 @@
+import type { Individual } from '../model/types.js';
 import { Sex } from '../psc/semantics.js';
 
 /**
@@ -87,6 +88,14 @@ const ENTRIES: RelationshipMetadata[] = [
 
 const TABLE = new Map<string, RelationshipMetadata>(ENTRIES.map((m) => [m.code, m]));
 
+export interface IndividualDisplayLabelOptions {
+  /**
+   * When true, prefer the human-readable relationship label over `individual.name`.
+   * Falls back to the name when the relationship code is missing or unknown.
+   */
+  preferRelationshipLabel?: boolean;
+}
+
 /**
  * Look up metadata for an HL7 v3 FamilyMember code. Returns `undefined` when
  * the code is unknown to this library — callers (parse.ts, validation/) are
@@ -95,6 +104,20 @@ const TABLE = new Map<string, RelationshipMetadata>(ENTRIES.map((m) => [m.code, 
  */
 export function getRelationshipMetadata(code: string): RelationshipMetadata | undefined {
   return TABLE.get(code);
+}
+
+export function getRelationshipDisplay(code: string | undefined): string | undefined {
+  if (code === undefined) return undefined;
+  return getRelationshipMetadata(code)?.display;
+}
+
+export function resolveIndividualDisplayLabel(
+  individual: Pick<Individual, 'name' | 'relationshipToProband'>,
+  options: IndividualDisplayLabelOptions = {},
+): string | undefined {
+  const relationshipLabel = getRelationshipDisplay(individual.relationshipToProband);
+  if (options.preferRelationshipLabel) return relationshipLabel ?? individual.name;
+  return individual.name;
 }
 
 /** All known codes, in declaration order. Useful for iteration in tests. */

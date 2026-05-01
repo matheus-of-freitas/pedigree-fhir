@@ -2,9 +2,13 @@ import {
   type LayoutOptions,
   Sex,
   VitalStatus,
+  computeNodeLabelMaxWidths,
+  computeNodeLabelXOffsets,
+  computeParentDropStemLabelObstacles,
   createPedigreeStore,
   inferRelationships,
   parsePedigree,
+  resolveIndividualDisplayLabel,
 } from '@pedigree/core';
 import {
   Edge,
@@ -17,6 +21,7 @@ import {
 } from '@pedigree/react';
 import { type ReactNode, useMemo } from 'react';
 import type { Fixture } from '../fixtures/three-gen.js';
+import { NodeLabel } from './NodeLabel.js';
 
 const NODE_SIZE = 40;
 
@@ -24,6 +29,7 @@ export interface InteractivePedigreeViewProps {
   fixture: Fixture;
   layoutOptions?: LayoutOptions;
   showCompactToggles?: boolean;
+  showRelativeLabels?: boolean;
 }
 
 /**
@@ -35,6 +41,7 @@ export function InteractivePedigreeView({
   fixture,
   layoutOptions = {},
   showCompactToggles = true,
+  showRelativeLabels = false,
 }: InteractivePedigreeViewProps) {
   const store = useMemo(() => {
     const graph = inferRelationships(parsePedigree(fixture.patient, fixture.familyHistory));
@@ -45,7 +52,7 @@ export function InteractivePedigreeView({
     <PedigreeProvider store={store}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {showCompactToggles && <CompactToolbar />}
-        <SelectableSvg />
+        <SelectableSvg showRelativeLabels={showRelativeLabels} />
         <SelectionInspector />
       </div>
     </PedigreeProvider>
@@ -124,12 +131,40 @@ function SelectionInspector() {
   );
 }
 
-function SelectableSvg() {
+function SelectableSvg({ showRelativeLabels }: { showRelativeLabels: boolean }) {
   const { selectedId, toggleSelection } = useSelection();
   return (
     <Pedigree>
       {({ graph, layout }) => {
         const { minX, minY, width, height } = layout.bounds;
+        const labels = new Map(
+          layout.nodes.map((node) => {
+            const individual = graph.individuals[node.id];
+            return [
+              node.id,
+              individual === undefined
+                ? undefined
+                : resolveIndividualDisplayLabel(individual, {
+                    preferRelationshipLabel: showRelativeLabels,
+                  }),
+            ];
+          }),
+        );
+        const labelObstacles = computeParentDropStemLabelObstacles(
+          layout.partnerEdges,
+          layout.parentDrops,
+        );
+        const labelWidths = computeNodeLabelMaxWidths(layout.nodes, {
+          obstacles: labelObstacles,
+        });
+        const labelOffsets = computeNodeLabelXOffsets(
+          layout.nodes.map((node) => ({
+            ...node,
+            label: labels.get(node.id),
+            maxWidth: labelWidths.get(node.id),
+          })),
+          { fontSize: 11, obstacles: labelObstacles },
+        );
         return (
           <svg
             viewBox={`${minX - 30} ${minY - 30} ${width + 60} ${height + 60}`}
@@ -179,7 +214,9 @@ function SelectableSvg() {
                     affected={individual.semantics.conditions.some((c) => c.status === 'affected')}
                     proband={individual.id === graph.proband}
                     selected={individual.id === selectedId}
-                    label={individual.name}
+                    label={labels.get(individual.id)}
+                    labelMaxWidth={labelWidths.get(individual.id)}
+                    labelOffsetX={labelOffsets.get(individual.id) ?? 0}
                     onSelect={() => toggleSelection(individual.id)}
                   />
                 )}
@@ -202,9 +239,24 @@ function SelectableGlyph(props: {
   proband: boolean;
   selected: boolean;
   label: string | undefined;
+  labelMaxWidth: number | undefined;
+  labelOffsetX: number;
   onSelect: () => void;
 }): ReactNode {
-  const { id, x, y, sex, vital, affected, proband, selected, label, onSelect } = props;
+  const {
+    id,
+    x,
+    y,
+    sex,
+    vital,
+    affected,
+    proband,
+    selected,
+    label,
+    labelMaxWidth,
+    labelOffsetX,
+    onSelect,
+  } = props;
   const half = NODE_SIZE / 2;
   const fill = affected ? 'var(--pedigree-affected)' : 'var(--pedigree-fill)';
   const stroke = proband ? 'var(--pedigree-proband)' : 'var(--pedigree-stroke)';
@@ -280,11 +332,14 @@ function SelectableGlyph(props: {
           fill={stroke}
         />
       )}
-      {label !== undefined && (
-        <text y={half + 18} textAnchor="middle" fontSize={11} fill="var(--pedigree-text)">
-          {label}
-        </text>
-      )}
+      <NodeLabel
+        label={label}
+        maxWidth={labelMaxWidth}
+        x={labelOffsetX}
+        y={half + 18}
+        fontSize={11}
+        fill="var(--pedigree-text)"
+      />
     </g>
   );
 }

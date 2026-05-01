@@ -408,10 +408,10 @@ describe('computePedigreeLayout — PSC polish', () => {
       twinGroupId: 'twin:p+s',
       type: TwinType.Monozygotic,
       children: ['p', 's'],
-      junction: { x: 0, y: 180 },
+      junction: { x: 0, y: 190 },
     });
-    expect(junction?.path).toBe('M 0 180 L -40 220 M 0 180 L 40 220');
-    expect(junction?.monozygoticPath).toBe('M -20 200 H 20');
+    expect(junction?.path).toBe('M 0 190 L -40 220 M 0 190 L 40 220');
+    expect(junction?.monozygoticPath).toBe('M -20 205 H 20');
     expect(drop?.path).toContain(junction?.monozygoticPath);
   });
 
@@ -456,8 +456,8 @@ describe('computePedigreeLayout — PSC polish', () => {
     const drop = out.parentDrops.find((d) => d.children.includes('p'));
 
     expect(drop?.twinJunctions).toEqual([]);
-    expect(drop?.path).toContain('M -40 180 V 220');
-    expect(drop?.path).toContain('M 40 180 V 220');
+    expect(drop?.path).toContain('M -40 190 V 220');
+    expect(drop?.path).toContain('M 40 190 V 220');
   });
 });
 

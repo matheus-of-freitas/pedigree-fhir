@@ -21,7 +21,7 @@ The package currently exports these main areas:
   - `serializePedigree`
   - explicit `R4*` type aliases for `Patient`, `FamilyMemberHistory`, and related FHIR datatypes
   - genetics extension helpers
-  - relationship-code helpers
+  - relationship-code helpers and display-label resolvers
 - `model/*`
   - graph and individual/couple types
   - ID helpers
@@ -89,6 +89,11 @@ future R5 strategy to be added intentionally rather than through ambient globals
 - fabricated parents or grandparents where the topology is strongly implied
 
 This split is deliberate: parsing handles explicit source data, while inference handles predictable pedigree structure recovery.
+
+Relationship-code helpers can also drive consumer labels. For example,
+`resolveIndividualDisplayLabel(individual, { preferRelationshipLabel: true })`
+lets a renderer prefer readable relative labels like `"mother"` or
+`"natural sister"` while still falling back to `individual.name` when needed.
 
 ## Layout
 
