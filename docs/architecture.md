@@ -17,29 +17,29 @@ At a high level, the project is split into five layers:
 ```mermaid
 flowchart TD
   subgraph Inputs
-    A[Patient]
-    B[FamilyMemberHistory[]]
+    A["Patient"]
+    B["FamilyMemberHistory array"]
   end
 
   subgraph Core["@pedigree/core"]
-    C[parsePedigree]
-    D[inferRelationships]
-    E[PedigreeGraph]
-    F[computeLayout]
-    G[createPedigreeStore]
-    H[defaultRegistry / createRegistry]
+    C["parsePedigree"]
+    D["inferRelationships"]
+    E["PedigreeGraph"]
+    F["computeLayout"]
+    G["createPedigreeStore"]
+    H["defaultRegistry / createRegistry"]
   end
 
   subgraph React["@pedigree/react"]
-    I[PedigreeProvider]
-    J[Hooks]
-    K[Render-prop primitives]
+    I["PedigreeProvider"]
+    J["Hooks"]
+    K["Render-prop primitives"]
   end
 
   subgraph Surfaces
-    L[Demo app]
-    M[Storybook]
-    N[Playwright]
+    L["Demo app"]
+    M["Storybook"]
+    N["Playwright"]
   end
 
   A --> C
@@ -140,11 +140,11 @@ The action surface is split into three edit families plus non-edit actions:
 
 ```mermaid
 flowchart LR
-  A[PedigreeAction] --> B[load / layout / selection]
-  A --> C[Individual edits]
-  A --> D[Graph edits]
-  A --> E[Couple edits]
-  A --> F[undo / redo]
+  A["PedigreeAction"] --> B["load / layout / selection"]
+  A --> C["Individual edits"]
+  A --> D["Graph edits"]
+  A --> E["Couple edits"]
+  A --> F["undo / redo"]
 ```
 
 - **Individual edits**: sex, vital status, conditions, carrier state, adoption, proband
@@ -201,11 +201,11 @@ The repo’s verification stack is intentionally broad:
 
 ```mermaid
 flowchart LR
-  A[Biome] --> E[CI]
-  B[TypeScript] --> E
-  C[Vitest with 100% package coverage] --> E
-  D[Package + Storybook builds] --> E
-  F[Playwright flows + visuals] --> E
+  A["Biome"] --> E["CI"]
+  B["TypeScript"] --> E
+  C["Vitest with 100% package coverage"] --> E
+  D["Package + Storybook builds"] --> E
+  F["Playwright flows + visuals"] --> E
 ```
 
 That matters because the architecture is not just code organization; it is also how confidence is established across parsing, state, layout, React integration, and rendered browser behavior.

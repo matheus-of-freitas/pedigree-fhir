@@ -28,16 +28,16 @@ That design goal shows up throughout the repo:
 
 ```mermaid
 flowchart LR
-  A[Patient + FamilyMemberHistory] --> B[parsePedigree]
-  B --> C[inferRelationships]
-  C --> D[PedigreeGraph]
-  D --> E[createPedigreeStore]
-  D --> F[computeLayout]
-  E --> G[@pedigree/react provider + hooks]
+  A["Patient + FamilyMemberHistory"] --> B["parsePedigree"]
+  B --> C["inferRelationships"]
+  C --> D["PedigreeGraph"]
+  D --> E["createPedigreeStore"]
+  D --> F["computeLayout"]
+  E --> G["React provider + hooks"]
   F --> G
-  D --> H[Validation registry]
+  D --> H["Validation registry"]
   H --> G
-  G --> I[Consumer-owned SVG / app UI]
+  G --> I["Consumer-owned SVG / app UI"]
 ```
 
 For a deeper explanation, see [Architecture](docs/architecture.md).
