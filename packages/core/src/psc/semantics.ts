@@ -28,6 +28,23 @@ export const AffectedStatus = {
 } as const;
 export type AffectedStatus = (typeof AffectedStatus)[keyof typeof AffectedStatus];
 
+export interface AgeQuantity {
+  value: number;
+  unit?: string;
+  code?: string;
+  system?: string;
+}
+
+export interface AgeRange {
+  low?: AgeQuantity;
+  high?: AgeQuantity;
+}
+
+export type AgeObservation =
+  | { kind: 'quantity'; quantity: AgeQuantity }
+  | { kind: 'range'; range: AgeRange }
+  | { kind: 'text'; text: string };
+
 export const CarrierStatus = {
   None: 'none',
   Carrier: 'carrier',
@@ -72,6 +89,8 @@ export interface ConditionRecord {
   /** Optional human-readable label, surfaced verbatim by consumers. */
   display?: string;
   status: AffectedStatus;
+  /** Optional structured onset / age-at-diagnosis metadata. */
+  onsetAge?: AgeObservation;
 }
 
 /**

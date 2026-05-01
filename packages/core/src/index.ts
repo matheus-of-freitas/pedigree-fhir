@@ -1,4 +1,6 @@
 export * from './psc/semantics.js';
+export * from './psc/conditions.js';
+export * from './psc/oncology.js';
 export * from './model/types.js';
 export * from './model/ids.js';
 export * from './model/infer.js';

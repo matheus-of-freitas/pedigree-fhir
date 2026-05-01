@@ -39,6 +39,51 @@ describe('serializePedigree — proband', () => {
     expect(out.familyHistory).toEqual([]);
   });
 
+  it('writes proband birthDate when present', () => {
+    const g = parsePedigree(patient({ id: 'p', birthDate: '1977-05-04' }), []);
+    expect(serializePedigree(g).patient.birthDate).toBe('1977-05-04');
+  });
+
+  it('writes quantity unit/code/system details on serialized ages', () => {
+    const g = parsePedigree(patient({ id: 'p' }), [
+      fmh({ id: 'm', patientId: 'p', relationship: 'MTH' }),
+    ]);
+    g.individuals.m = {
+      ...g.individuals.m!,
+      age: {
+        kind: 'quantity',
+        quantity: {
+          value: 48,
+          unit: 'years',
+          code: 'a',
+          system: 'http://unitsofmeasure.org',
+        },
+      },
+    };
+    expect(serializePedigree(g).familyHistory[0]?.ageAge).toEqual({
+      value: 48,
+      unit: 'years',
+      code: 'a',
+      system: 'http://unitsofmeasure.org',
+    });
+  });
+
+  it('omits optional quantity metadata when it is not present', () => {
+    const g = parsePedigree(patient({ id: 'p' }), [
+      fmh({ id: 'm', patientId: 'p', relationship: 'MTH' }),
+    ]);
+    g.individuals.m = {
+      ...g.individuals.m!,
+      age: {
+        kind: 'quantity',
+        quantity: {
+          value: 48,
+        },
+      },
+    };
+    expect(serializePedigree(g).familyHistory[0]?.ageAge).toEqual({ value: 48 });
+  });
+
   it('omits gender when the proband sex is Unknown', () => {
     const g = parsePedigree(patient({ id: 'p' }), []);
     const out = serializePedigree(g);
@@ -87,6 +132,109 @@ describe('serializePedigree — FMH list', () => {
       { code: { coding: [{ code: '254837009', display: 'Breast cancer' }] } },
       { code: { coding: [{ code: 'undisplayed' }] } },
     ]);
+  });
+
+  it('writes FMH names, age metadata, and onset age metadata', () => {
+    const g = parsePedigree(patient({ id: 'p' }), [
+      fmh({
+        id: 'aunt',
+        patientId: 'p',
+        relationship: 'MAUNT',
+        sex: 'female',
+        name: 'Eugenia',
+        age: 48,
+        conditions: [{ code: '363443007', display: 'Ovarian cancer', onsetAge: 45 }],
+      }),
+    ]);
+    const out = serializePedigree(g).familyHistory[0];
+    expect(out?.name).toBe('Eugenia');
+    expect(out?.ageAge).toEqual({ value: 48, unit: 'a', code: 'a' });
+    expect(out?.condition).toEqual([
+      {
+        code: { coding: [{ code: '363443007', display: 'Ovarian cancer' }] },
+        onsetAge: { value: 45, unit: 'a', code: 'a' },
+      },
+    ]);
+  });
+
+  it('writes bornDate and deceasedAge metadata when present', () => {
+    const g = parsePedigree(patient({ id: 'p' }), [
+      fmh({
+        id: 'gf',
+        patientId: 'p',
+        relationship: 'PGRFTH',
+        name: 'Grandfather',
+        bornDate: '1940-03-10',
+        deceased: true,
+        deceasedAge: 79,
+      }),
+    ]);
+    const out = serializePedigree(g).familyHistory[0];
+    expect(out?.bornDate).toBe('1940-03-10');
+    expect(out?.deceasedAge).toEqual({ value: 79, unit: 'a', code: 'a' });
+  });
+
+  it('writes range-based age metadata for age, deceasedAge, and onsetAge', () => {
+    const g = parsePedigree(patient({ id: 'p' }), [
+      fmh({ id: 'm', patientId: 'p', relationship: 'MTH' }),
+    ]);
+    g.individuals.m = {
+      ...g.individuals.m!,
+      age: { kind: 'range', range: { low: { value: 45, unit: 'a', code: 'a' } } },
+      deceasedAge: { kind: 'range', range: { high: { value: 81, unit: 'a', code: 'a' } } },
+      semantics: {
+        ...g.individuals.m!.semantics,
+        vital: VitalStatus.Deceased,
+        conditions: [
+          {
+            code: 'C1',
+            display: 'Cancer 1',
+            status: AffectedStatus.Affected,
+            onsetAge: {
+              kind: 'range',
+              range: {
+                low: { value: 40, unit: 'a', code: 'a' },
+                high: { value: 42, unit: 'a', code: 'a' },
+              },
+            },
+          },
+        ],
+      },
+    };
+    const out = serializePedigree(g).familyHistory[0];
+    expect(out?.ageRange).toEqual({ low: { value: 45, unit: 'a', code: 'a' } });
+    expect(out?.deceasedRange).toEqual({ high: { value: 81, unit: 'a', code: 'a' } });
+    expect(out?.condition?.[0]?.onsetRange).toEqual({
+      low: { value: 40, unit: 'a', code: 'a' },
+      high: { value: 42, unit: 'a', code: 'a' },
+    });
+  });
+
+  it('writes text-based age metadata for age, deceasedAge, and onsetAge', () => {
+    const g = parsePedigree(patient({ id: 'p' }), [
+      fmh({ id: 'm', patientId: 'p', relationship: 'MTH' }),
+    ]);
+    g.individuals.m = {
+      ...g.individuals.m!,
+      age: { kind: 'text', text: 'middle age' },
+      deceasedAge: { kind: 'text', text: 'elderly' },
+      semantics: {
+        ...g.individuals.m!.semantics,
+        vital: VitalStatus.Deceased,
+        conditions: [
+          {
+            code: 'C1',
+            display: 'Cancer 1',
+            status: AffectedStatus.Affected,
+            onsetAge: { kind: 'text', text: 'adolescence' },
+          },
+        ],
+      },
+    };
+    const out = serializePedigree(g).familyHistory[0];
+    expect(out?.ageString).toBe('middle age');
+    expect(out?.deceasedString).toBe('elderly');
+    expect(out?.condition?.[0]?.onsetString).toBe('adolescence');
   });
 
   it('uses the FAMMEMB default code when relationshipToProband is unset', () => {
@@ -360,6 +508,30 @@ describe('serializePedigree — round-trip', () => {
     expect(reparsed.individuals.m?.semantics.conditions).toEqual([
       { code: 'C1', display: 'Cancer 1', status: AffectedStatus.Affected },
     ]);
+  });
+
+  it('round-trips age and condition onset metadata', () => {
+    const original = parsePedigree(patient({ id: 'p', birthDate: '1977-05-04' }), [
+      fmh({
+        id: 'mother',
+        patientId: 'p',
+        relationship: 'MTH',
+        name: 'Brenda',
+        age: 74,
+        conditions: [{ code: '254837009', display: 'Breast cancer', onsetAge: 68 }],
+      }),
+    ]);
+    const ser = serializePedigree(original);
+    const reparsed = parsePedigree(ser.patient, ser.familyHistory);
+    expect(reparsed.individuals.p?.birthDate).toBe('1977-05-04');
+    expect(reparsed.individuals.mother?.age).toEqual({
+      kind: 'quantity',
+      quantity: { value: 74, unit: 'a', code: 'a' },
+    });
+    expect(reparsed.individuals.mother?.semantics.conditions[0]?.onsetAge).toEqual({
+      kind: 'quantity',
+      quantity: { value: 68, unit: 'a', code: 'a' },
+    });
   });
 
   it('round-trips deceased + sex on the proband', () => {

@@ -1,6 +1,7 @@
 import { createPedigreeStore, inferRelationships, parsePedigree } from '@pedigree/core';
 import { PedigreeProvider } from '@pedigree/react';
 import { useMemo } from 'react';
+import { CancerHistoryView } from './CancerHistoryView.js';
 import { PedigreeView } from './PedigreeView.js';
 import { familyHistory, proband } from './fixture.js';
 
@@ -29,6 +30,16 @@ export function App() {
         <section>
           <h2>Variant: themed</h2>
           <PedigreeView variant="themed" />
+        </section>
+
+        <section>
+          <h2>Use case: family cancer history</h2>
+          <p>
+            Same headless graph and layout, but the oncology profile is enabled here to add
+            quartered cancer markers, a legend, and age plus diagnosis-age labels without changing
+            the generic pedigree renderer.
+          </p>
+          <CancerHistoryView />
         </section>
       </main>
     </PedigreeProvider>

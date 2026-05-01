@@ -10,6 +10,8 @@ import {
 import {
   Adopted,
   AffectedStatus,
+  type AgeObservation,
+  type AgeQuantity,
   CarrierStatus,
   type ConditionRecord,
   type IndividualSemantics,
@@ -45,6 +47,51 @@ function patientIsDeceased(patient: R4Patient): boolean {
   return Boolean(patient.deceasedBoolean) || patient.deceasedDateTime !== undefined;
 }
 
+interface QuantityLike {
+  value?: number | undefined;
+  unit?: string | undefined;
+  code?: string | undefined;
+  system?: string | undefined;
+}
+
+interface RangeLike {
+  low?: QuantityLike | undefined;
+  high?: QuantityLike | undefined;
+}
+
+function toAgeQuantity(quantity: QuantityLike | undefined): AgeQuantity | undefined {
+  if (quantity?.value === undefined) return undefined;
+  return {
+    value: quantity.value,
+    ...(quantity.unit === undefined ? {} : { unit: quantity.unit }),
+    ...(quantity.code === undefined ? {} : { code: quantity.code }),
+    ...(quantity.system === undefined ? {} : { system: quantity.system }),
+  };
+}
+
+function extractAgeObservation(
+  quantityLike: QuantityLike | undefined,
+  rangeLike: RangeLike | undefined,
+  text: string | undefined,
+): AgeObservation | undefined {
+  const quantity = toAgeQuantity(quantityLike);
+  if (quantity !== undefined) return { kind: 'quantity', quantity };
+
+  const low = toAgeQuantity(rangeLike?.low);
+  const high = toAgeQuantity(rangeLike?.high);
+  if (low !== undefined || high !== undefined) {
+    return {
+      kind: 'range',
+      range: {
+        ...(low === undefined ? {} : { low }),
+        ...(high === undefined ? {} : { high }),
+      },
+    };
+  }
+
+  return text === undefined ? undefined : { kind: 'text', text };
+}
+
 function fmhIsDeceased(fmh: R4FamilyMemberHistory): boolean {
   return (
     Boolean(fmh.deceasedBoolean) ||
@@ -66,10 +113,20 @@ function extractFmhConditions(fmh: R4FamilyMemberHistory): ConditionRecord[] {
     const code = coding?.code ?? c.code?.text;
     if (code === undefined) continue;
     const display = coding?.display ?? c.code?.text;
+    const onsetAge = extractAgeObservation(c.onsetAge, c.onsetRange, c.onsetString);
     const record: ConditionRecord =
       display === undefined
-        ? { code, status: AffectedStatus.Affected }
-        : { code, display, status: AffectedStatus.Affected };
+        ? {
+            code,
+            status: AffectedStatus.Affected,
+            ...(onsetAge === undefined ? {} : { onsetAge }),
+          }
+        : {
+            code,
+            display,
+            status: AffectedStatus.Affected,
+            ...(onsetAge === undefined ? {} : { onsetAge }),
+          };
     records.push(record);
   }
   return records;
@@ -81,6 +138,10 @@ function extractName(patient: R4Patient): string | undefined {
   if (n.text !== undefined) return n.text;
   const parts = [...(n.given ?? []), n.family].filter((p): p is string => p !== undefined);
   return parts.length === 0 ? undefined : parts.join(' ');
+}
+
+function extractFmhName(fmh: R4FamilyMemberHistory): string | undefined {
+  return fmh.name;
 }
 
 function refToIndividualId(reference: string): IndividualId {
@@ -156,6 +217,9 @@ function buildIndividual(args: {
   sourceRef?: { resourceType: 'Patient' | 'FamilyMemberHistory'; id: string };
   relationshipToProband?: string;
   name?: string;
+  birthDate?: string;
+  age?: AgeObservation;
+  deceasedAge?: AgeObservation;
 }): Individual {
   const ind: Individual = {
     id: args.id,
@@ -167,6 +231,9 @@ function buildIndividual(args: {
     ind.relationshipToProband = args.relationshipToProband;
   }
   if (args.name !== undefined) ind.name = args.name;
+  if (args.birthDate !== undefined) ind.birthDate = args.birthDate;
+  if (args.age !== undefined) ind.age = args.age;
+  if (args.deceasedAge !== undefined) ind.deceasedAge = args.deceasedAge;
   return ind;
 }
 
@@ -177,12 +244,14 @@ function buildProband(patient: R4Patient): Individual {
   const sex = mapGender(patient.gender);
   const vital = patientIsDeceased(patient) ? VitalStatus.Deceased : VitalStatus.Living;
   const name = extractName(patient);
+  const birthDate = patient.birthDate;
   return buildIndividual({
     id: patient.id,
     semantics: defaultSemantics(sex, vital, true),
     provenance: Provenance.Explicit,
     sourceRef: { resourceType: 'Patient', id: patient.id },
     ...(name === undefined ? {} : { name }),
+    ...(birthDate === undefined ? {} : { birthDate }),
   });
 }
 
@@ -190,17 +259,24 @@ function buildFmhIndividual(fmh: R4FamilyMemberHistory): Individual | undefined 
   if (fmh.id === undefined) return undefined;
   const sex = extractFmhSex(fmh);
   const vital = fmhIsDeceased(fmh) ? VitalStatus.Deceased : VitalStatus.Living;
+  const age = extractAgeObservation(fmh.ageAge, fmh.ageRange, fmh.ageString);
+  const deceasedAge = extractAgeObservation(fmh.deceasedAge, fmh.deceasedRange, fmh.deceasedString);
   const semantics: IndividualSemantics = {
     ...defaultSemantics(sex, vital, false),
     conditions: extractFmhConditions(fmh),
   };
   const relationshipToProband = fmh.relationship?.coding?.[0]?.code;
+  const name = extractFmhName(fmh);
   return buildIndividual({
     id: fmh.id,
     semantics,
     provenance: Provenance.Explicit,
     sourceRef: { resourceType: 'FamilyMemberHistory', id: fmh.id },
     ...(relationshipToProband === undefined ? {} : { relationshipToProband }),
+    ...(name === undefined ? {} : { name }),
+    ...(fmh.bornDate === undefined ? {} : { birthDate: fmh.bornDate }),
+    ...(age === undefined ? {} : { age }),
+    ...(deceasedAge === undefined ? {} : { deceasedAge }),
   });
 }
 

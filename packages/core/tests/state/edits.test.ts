@@ -57,10 +57,20 @@ describe('upsertCondition', () => {
     const out = applyIndividualEdit(build(), {
       type: 'upsertCondition',
       id: 'p',
-      condition: { code: 'C1', display: 'Some cancer', status: AffectedStatus.Affected },
+      condition: {
+        code: 'C1',
+        display: 'Some cancer',
+        status: AffectedStatus.Affected,
+        onsetAge: { kind: 'quantity', quantity: { value: 45, unit: 'a', code: 'a' } },
+      },
     });
     expect(out.individuals.p?.semantics.conditions).toEqual([
-      { code: 'C1', display: 'Some cancer', status: AffectedStatus.Affected },
+      {
+        code: 'C1',
+        display: 'Some cancer',
+        status: AffectedStatus.Affected,
+        onsetAge: { kind: 'quantity', quantity: { value: 45, unit: 'a', code: 'a' } },
+      },
     ]);
   });
 

@@ -51,6 +51,48 @@ describe('parsePedigree — proband', () => {
     expect(g.individuals.p?.semantics.vital).toBe(VitalStatus.Deceased);
   });
 
+  it('preserves proband birthDate for downstream age formatting', () => {
+    const g = parsePedigree(patient({ id: 'p', birthDate: '1977-05-04' }), []);
+    expect(g.individuals.p?.birthDate).toBe('1977-05-04');
+  });
+
+  it('preserves quantity unit/code/system details on parsed ages', () => {
+    const m: R4FamilyMemberHistory = {
+      resourceType: 'FamilyMemberHistory',
+      id: 'm',
+      status: 'completed',
+      patient: { reference: 'Patient/p' },
+      relationship: { coding: [{ code: 'MTH' }] },
+      ageAge: { value: 48, unit: 'years', code: 'a', system: 'http://unitsofmeasure.org' },
+    };
+    const g = parsePedigree(patient({ id: 'p' }), [m]);
+    expect(g.individuals.m?.age).toEqual({
+      kind: 'quantity',
+      quantity: {
+        value: 48,
+        unit: 'years',
+        code: 'a',
+        system: 'http://unitsofmeasure.org',
+      },
+    });
+  });
+
+  it('parses age quantities that omit optional unit metadata', () => {
+    const m: R4FamilyMemberHistory = {
+      resourceType: 'FamilyMemberHistory',
+      id: 'm',
+      status: 'completed',
+      patient: { reference: 'Patient/p' },
+      relationship: { coding: [{ code: 'MTH' }] },
+      ageAge: { value: 48 },
+    };
+    const g = parsePedigree(patient({ id: 'p' }), [m]);
+    expect(g.individuals.m?.age).toEqual({
+      kind: 'quantity',
+      quantity: { value: 48 },
+    });
+  });
+
   it('falls back to given+family names when name.text is absent', () => {
     const p: R4Patient = {
       resourceType: 'Patient',
@@ -99,6 +141,81 @@ describe('parsePedigree — FMH individuals', () => {
     expect(mother?.provenance).toBe(Provenance.Explicit);
   });
 
+  it('preserves FMH name, birth/age metadata, and condition onset age', () => {
+    const aunt = fmh({
+      id: 'aunt',
+      patientId: 'p',
+      relationship: 'MAUNT',
+      sex: 'female',
+      name: 'Eugenia',
+      age: 48,
+      conditions: [{ code: '363443007', display: 'Ovarian cancer', onsetAge: 45 }],
+    });
+    const g = parsePedigree(patient({ id: 'p' }), [aunt]);
+    expect(g.individuals.aunt?.name).toBe('Eugenia');
+    expect(g.individuals.aunt?.age).toEqual({
+      kind: 'quantity',
+      quantity: { value: 48, unit: 'a', code: 'a' },
+    });
+    expect(g.individuals.aunt?.semantics.conditions).toEqual([
+      {
+        code: '363443007',
+        display: 'Ovarian cancer',
+        status: AffectedStatus.Affected,
+        onsetAge: {
+          kind: 'quantity',
+          quantity: { value: 45, unit: 'a', code: 'a' },
+        },
+      },
+    ]);
+  });
+
+  it('preserves deceasedAge metadata on a deceased FMH', () => {
+    const grandfather = fmh({
+      id: 'gf',
+      patientId: 'p',
+      relationship: 'PGRFTH',
+      deceased: true,
+      deceasedAge: 79,
+    });
+    const g = parsePedigree(patient({ id: 'p' }), [grandfather]);
+    expect(g.individuals.gf?.deceasedAge).toEqual({
+      kind: 'quantity',
+      quantity: { value: 79, unit: 'a', code: 'a' },
+    });
+  });
+
+  it('preserves age/deceased ranges and text onset metadata', () => {
+    const person: R4FamilyMemberHistory = {
+      resourceType: 'FamilyMemberHistory',
+      id: 'rangey',
+      status: 'completed',
+      patient: { reference: 'Patient/p' },
+      relationship: { coding: [{ code: 'MAUNT' }] },
+      ageRange: { low: { value: 45, unit: 'a', code: 'a' } },
+      deceasedRange: { high: { value: 81, unit: 'a', code: 'a' } },
+      condition: [
+        {
+          code: { coding: [{ code: 'C1', display: 'Sarcoma' }] },
+          onsetString: 'adulthood',
+        },
+      ],
+    };
+    const g = parsePedigree(patient({ id: 'p' }), [person]);
+    expect(g.individuals.rangey?.age).toEqual({
+      kind: 'range',
+      range: { low: { value: 45, unit: 'a', code: 'a' } },
+    });
+    expect(g.individuals.rangey?.deceasedAge).toEqual({
+      kind: 'range',
+      range: { high: { value: 81, unit: 'a', code: 'a' } },
+    });
+    expect(g.individuals.rangey?.semantics.conditions[0]?.onsetAge).toEqual({
+      kind: 'text',
+      text: 'adulthood',
+    });
+  });
+
   it('falls back to condition.code.text when no coding is supplied', () => {
     const c: R4FamilyMemberHistory = {
       resourceType: 'FamilyMemberHistory',
@@ -129,6 +246,27 @@ describe('parsePedigree — FMH individuals', () => {
     };
     const g = parsePedigree(patient({ id: 'p' }), [c]);
     expect(g.individuals.m?.semantics.conditions).toEqual([]);
+  });
+
+  it('preserves onset age even when a condition has no display label', () => {
+    const c: R4FamilyMemberHistory = {
+      resourceType: 'FamilyMemberHistory',
+      id: 'm',
+      status: 'completed',
+      patient: { reference: 'Patient/p' },
+      relationship: { coding: [{ code: 'MTH' }] },
+      condition: [
+        { code: { coding: [{ code: 'C1' }] }, onsetAge: { value: 42, unit: 'a', code: 'a' } },
+      ],
+    };
+    const g = parsePedigree(patient({ id: 'p' }), [c]);
+    expect(g.individuals.m?.semantics.conditions).toEqual([
+      {
+        code: 'C1',
+        status: AffectedStatus.Affected,
+        onsetAge: { kind: 'quantity', quantity: { value: 42, unit: 'a', code: 'a' } },
+      },
+    ]);
   });
 
   it.each([

@@ -20,11 +20,13 @@ export function patient(args: {
   gender?: 'male' | 'female' | 'other' | 'unknown';
   deceased?: boolean;
   name?: string;
+  birthDate?: string;
 }): R4Patient {
   const p: R4Patient = { resourceType: 'Patient', id: args.id };
   if (args.gender !== undefined) p.gender = args.gender;
   if (args.deceased !== undefined) p.deceasedBoolean = args.deceased;
   if (args.name !== undefined) p.name = [{ text: args.name }];
+  if (args.birthDate !== undefined) p.birthDate = args.birthDate;
   return p;
 }
 
@@ -34,7 +36,11 @@ export function fmh(args: {
   relationship?: string;
   sex?: 'male' | 'female' | 'other' | 'unknown';
   deceased?: boolean;
-  conditions?: { code: string; display?: string }[];
+  name?: string;
+  bornDate?: string;
+  age?: number | string;
+  deceasedAge?: number | string;
+  conditions?: { code: string; display?: string; onsetAge?: number | string }[];
   parentRefs?: { reference: string; role?: ParentRole }[];
   siblingRefs?: { reference: string; role?: SiblingRole }[];
 }): R4FamilyMemberHistory {
@@ -54,11 +60,23 @@ export function fmh(args: {
     };
   }
   if (args.deceased !== undefined) r.deceasedBoolean = args.deceased;
+  if (args.name !== undefined) r.name = args.name;
+  if (args.bornDate !== undefined) r.bornDate = args.bornDate;
+  if (typeof args.age === 'number') r.ageAge = { value: args.age, unit: 'a', code: 'a' };
+  if (typeof args.age === 'string') r.ageString = args.age;
+  if (typeof args.deceasedAge === 'number') {
+    r.deceasedAge = { value: args.deceasedAge, unit: 'a', code: 'a' };
+  }
+  if (typeof args.deceasedAge === 'string') r.deceasedString = args.deceasedAge;
   if (args.conditions !== undefined && args.conditions.length > 0) {
     r.condition = args.conditions.map((c) => ({
       code: {
         coding: [c.display === undefined ? { code: c.code } : { code: c.code, display: c.display }],
       },
+      ...(typeof c.onsetAge === 'number'
+        ? { onsetAge: { value: c.onsetAge, unit: 'a', code: 'a' } }
+        : {}),
+      ...(typeof c.onsetAge === 'string' ? { onsetString: c.onsetAge } : {}),
     }));
   }
   const exts: R4Extension[] = [];

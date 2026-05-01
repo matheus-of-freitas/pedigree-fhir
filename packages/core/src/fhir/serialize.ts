@@ -4,7 +4,7 @@ import {
   type PedigreeGraph,
   Provenance,
 } from '../model/types.js';
-import { Sex, VitalStatus } from '../psc/semantics.js';
+import { type AgeObservation, type AgeQuantity, Sex, VitalStatus } from '../psc/semantics.js';
 import {
   type GeneticsParent,
   type GeneticsSibling,
@@ -47,7 +47,44 @@ function buildPatient(ind: Individual): R4Patient {
   if (gender !== undefined) p.gender = gender;
   if (ind.semantics.vital === VitalStatus.Deceased) p.deceasedBoolean = true;
   if (ind.name !== undefined) p.name = [{ text: ind.name }];
+  if (ind.birthDate !== undefined) p.birthDate = ind.birthDate;
   return p;
+}
+
+function toFhirQuantity(quantity: AgeQuantity) {
+  return {
+    value: quantity.value,
+    ...(quantity.unit === undefined ? {} : { unit: quantity.unit }),
+    ...(quantity.code === undefined ? {} : { code: quantity.code }),
+    ...(quantity.system === undefined ? {} : { system: quantity.system }),
+  };
+}
+
+function ageObservationFields(
+  age: AgeObservation | undefined,
+  prefix: 'age' | 'deceased' | 'onset',
+): Record<string, unknown> {
+  if (age === undefined) return {};
+
+  if (age.kind === 'quantity') {
+    if (prefix === 'age') return { ageAge: toFhirQuantity(age.quantity) };
+    if (prefix === 'deceased') return { deceasedAge: toFhirQuantity(age.quantity) };
+    return { onsetAge: toFhirQuantity(age.quantity) };
+  }
+
+  if (age.kind === 'range') {
+    const range = {
+      ...(age.range.low === undefined ? {} : { low: toFhirQuantity(age.range.low) }),
+      ...(age.range.high === undefined ? {} : { high: toFhirQuantity(age.range.high) }),
+    };
+    if (prefix === 'age') return { ageRange: range };
+    if (prefix === 'deceased') return { deceasedRange: range };
+    return { onsetRange: range };
+  }
+
+  if (prefix === 'age') return { ageString: age.text };
+  if (prefix === 'deceased') return { deceasedString: age.text };
+  return { onsetString: age.text };
 }
 
 function buildBaseFmh(ind: Individual, probandId: IndividualId): R4FamilyMemberHistory {
@@ -64,12 +101,21 @@ function buildBaseFmh(ind: Individual, probandId: IndividualId): R4FamilyMemberH
   }
   if (ind.semantics.vital === VitalStatus.Deceased) r.deceasedBoolean = true;
   if (ind.name !== undefined) r.name = ind.name;
+  if (ind.birthDate !== undefined) r.bornDate = ind.birthDate;
+  Object.assign(r, ageObservationFields(ind.age, 'age'));
+  Object.assign(r, ageObservationFields(ind.deceasedAge, 'deceased'));
   if (ind.semantics.conditions.length > 0) {
-    r.condition = ind.semantics.conditions.map((c) => ({
-      code: {
-        coding: [c.display === undefined ? { code: c.code } : { code: c.code, display: c.display }],
-      },
-    }));
+    r.condition = ind.semantics.conditions.map((c) => {
+      const condition: NonNullable<R4FamilyMemberHistory['condition']>[number] = {
+        code: {
+          coding: [
+            c.display === undefined ? { code: c.code } : { code: c.code, display: c.display },
+          ],
+        },
+      };
+      Object.assign(condition, ageObservationFields(c.onsetAge, 'onset'));
+      return condition;
+    });
   }
   return r;
 }

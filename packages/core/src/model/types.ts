@@ -1,4 +1,4 @@
-import type { IndividualSemantics } from '../psc/semantics.js';
+import type { AgeObservation, IndividualSemantics } from '../psc/semantics.js';
 
 /**
  * Provenance tracks how an entity entered the graph: directly from a FHIR
@@ -46,6 +46,12 @@ export interface Individual {
   relationshipToProband?: string;
   /** Optional consumer-facing display name. The library never renders it. */
   name?: string;
+  /** Optional birth date for age derivation by consumers. */
+  birthDate?: string;
+  /** Optional current/reported age when supplied directly by source data. */
+  age?: AgeObservation;
+  /** Optional explicit age-at-death metadata. */
+  deceasedAge?: AgeObservation;
 }
 
 export interface Couple {
