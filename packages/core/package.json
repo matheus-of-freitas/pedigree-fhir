@@ -1,0 +1,37 @@
+{
+  "name": "@pedigree/core",
+  "version": "0.0.0",
+  "description": "Headless, framework-agnostic core for FHIR-driven pedigree charts: parsing, model, layout, state, validation.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "d3-hierarchy": "^3.1.2"
+  },
+  "devDependencies": {
+    "@types/d3-hierarchy": "^3.1.7",
+    "@types/fhir": "^0.0.41",
+    "tsup": "^8.3.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
