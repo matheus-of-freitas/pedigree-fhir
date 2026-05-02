@@ -16,6 +16,9 @@ permissions:
 
 jobs:
   deploy:
+    # Prerequisite: GitHub Pages must be enabled once in repository settings,
+    # with Source set to GitHub Actions. Until that exists, configure-pages
+    # will fail with "Get Pages site failed" when using the default GITHUB_TOKEN.
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:

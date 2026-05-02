@@ -25,6 +25,8 @@ import { type ReactNode, useMemo } from 'react';
 import type { Fixture } from '../fixtures/three-gen.js';
 
 const NODE_SIZE = 40;
+const LABEL_Y_OFFSET = 18;
+const PROBAND_LABEL_CLEARANCE = 10;
 const DETAIL_LAYOUT: LayoutOptions = {
   generationGap: 180,
   siblingPitch: 110,
@@ -133,6 +135,7 @@ export function CancerHistoryPedigreeView({
           const legendEntries = oncology.showLegend ? oncology.palette : [];
           const extraBottom =
             76 +
+            PROBAND_LABEL_CLEARANCE +
             maxWrappedLineCount * 14 +
             (profile === 'oncology-overlay' && legendEntries.length > 0 ? 44 : 0);
 
@@ -367,6 +370,10 @@ function formatConditionLine(
   return onsetAge === undefined ? label : `${label} ${onsetAge}`;
 }
 
+function getLabelBlockY(half: number, proband: boolean): number {
+  return half + LABEL_Y_OFFSET + (proband ? PROBAND_LABEL_CLEARANCE : 0);
+}
+
 function renderShape(
   sex: Sex,
   half: number,
@@ -442,7 +449,12 @@ function DetailGlyph(props: {
           fill={stroke}
         />
       )}
-      <LabelBlock lines={labelLines} maxWidth={labelMaxWidth} x={labelOffsetX} y={half + 18} />
+      <LabelBlock
+        lines={labelLines}
+        maxWidth={labelMaxWidth}
+        x={labelOffsetX}
+        y={getLabelBlockY(half, proband)}
+      />
     </g>
   );
 }
@@ -531,7 +543,12 @@ function OncologyGlyph(props: {
           fill={stroke}
         />
       )}
-      <LabelBlock lines={labelLines} maxWidth={labelMaxWidth} x={labelOffsetX} y={half + 18} />
+      <LabelBlock
+        lines={labelLines}
+        maxWidth={labelMaxWidth}
+        x={labelOffsetX}
+        y={getLabelBlockY(half, proband)}
+      />
     </g>
   );
 }
