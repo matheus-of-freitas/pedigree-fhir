@@ -1,0 +1,56 @@
+---
+title: Playground
+description: Use Storybook as the live playground for examples, editing flows, and use-case demos.
+sidebar_position: 4
+---
+
+import Link from '@docusaurus/Link';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+
+export function StorybookUrl() {
+  const {siteConfig} = useDocusaurusContext();
+  const storybookUrl = siteConfig.customFields?.storybookUrl || 'http://localhost:6006';
+
+  return <Link href={storybookUrl}>Open the Storybook playground</Link>;
+}
+
+# Playground
+
+The interactive surface for this project is **Storybook**.
+
+That is where you can:
+
+- inspect primitives such as nodes, edges, and sibships
+- try editing flows and see state changes reflected in the chart
+- explore validation and PSC-specific rendering behavior
+- review themed proof surfaces and use-case demos such as the oncology overlay
+
+## Why Storybook instead of a custom playground?
+
+Storybook already exists in the repo, it works well with the library's headless
+architecture, and it gives the project a stable place for:
+
+- interactive examples
+- regression-friendly proof stories
+- visual snapshot coverage
+
+For this repository, Docusaurus handles the **guides and API reference**, while
+Storybook stays focused on **live exploration**.
+
+## Open it locally
+
+```bash
+pnpm docs:dev
+```
+
+That command starts **both** the Docusaurus docsite (`http://localhost:3000`) and
+Storybook (`http://localhost:6006`), so the playground links in the docs work
+without extra setup.
+
+If you only want the playground server by itself:
+
+```bash
+pnpm -F @pedigree/storybook dev
+```
+
+<StorybookUrl />

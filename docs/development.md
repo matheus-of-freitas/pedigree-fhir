@@ -1,3 +1,9 @@
+---
+title: Development
+description: Day-to-day repo setup, commands, proof surfaces, and verification expectations.
+sidebar_position: 6
+---
+
 # Development
 
 This document covers day-to-day work in the repository: installing dependencies, running apps, understanding verification expectations, and navigating the proof surfaces.
@@ -18,6 +24,7 @@ pnpm install
 ```text
 packages/core       headless domain + layout + state + validation
 packages/react      React adapter for the core store/layout
+apps/docs           Docusaurus docsite
 apps/demo           minimal consumer application
 apps/storybook      story-driven proof surface
 e2e                 Playwright flow and visual coverage
@@ -39,6 +46,8 @@ Run all commands from the repo root unless noted otherwise.
 | `pnpm run mutation:core` | Run Stryker against `@pedigree/core` |
 | `pnpm run mutation:react` | Run Stryker against `@pedigree/react` |
 | `pnpm run build` | Build the publishable packages |
+| `pnpm run docs:build` | Build the Docusaurus docsite |
+| `pnpm run pages:build` | Build the combined GitHub Pages artifact with Docusaurus at `/` and Storybook at `/storybook` |
 | `pnpm run e2e` | Run Playwright flow and visual suites |
 | `pnpm run e2e:update` | Refresh Playwright visual baselines |
 
@@ -48,8 +57,45 @@ Run all commands from the repo root unless noted otherwise.
 | --- | --- |
 | `pnpm -F @pedigree/demo dev` | Run the demo app |
 | `pnpm -F @pedigree/demo build` | Build the demo app |
+| `pnpm docs:dev` | Run the local docs stack: Docusaurus on port 3000 and Storybook on port 6006 |
+| `pnpm -F @pedigree/docs start` | Run the Docusaurus docsite on port 3000 |
+| `pnpm -F @pedigree/docs build` | Build the docsite static output |
 | `pnpm -F @pedigree/storybook dev` | Run Storybook on port 6006 |
 | `pnpm -F @pedigree/storybook build` | Build Storybook static output |
+
+## Cross-linking the docs and playground
+
+The docsite and Storybook are intentionally separate surfaces:
+
+- Docusaurus owns the guides and API reference
+- Storybook owns the interactive playground and examples
+
+By default the two apps assume these local URLs:
+
+- docsite: `http://localhost:3000`
+- Storybook: `http://localhost:6006`
+
+You can override the Storybook link used by Docusaurus with:
+
+```bash
+STORYBOOK_URL=https://example.com/storybook pnpm -F @pedigree/docs build
+```
+
+For GitHub Pages deployment, the production build also needs:
+
+```bash
+DOCSITE_URL=https://<owner>.github.io \
+DOCSITE_BASE_URL=/pedigree/ \
+STORYBOOK_URL=https://<owner>.github.io/pedigree/storybook/ \
+STORYBOOK_DOCSITE_URL=https://<owner>.github.io/pedigree/ \
+STORYBOOK_BASE_URL=/pedigree/storybook/ \
+pnpm run pages:build
+```
+
+That produces a single static artifact in `dist/pages` with:
+
+- the docsite at the artifact root
+- Storybook copied into `dist/pages/storybook`
 
 ## Coverage expectation
 
@@ -88,7 +134,8 @@ The main CI workflow runs:
 4. package coverage
 5. package builds
 6. Storybook build
-7. Playwright flow + visual tests
+7. docsite build
+8. Playwright docs + flow + visual tests
 
 There is also a separate workflow that refreshes Playwright visual baselines on demand or on a schedule.
 
@@ -117,12 +164,13 @@ Use Storybook when you want focused examples for:
 
 ### Playwright
 
-The Playwright suite is split into two projects:
+The Playwright suite is split into three projects:
 
+- **docs**: basic docsite smoke coverage
 - **flows**: interaction and behavior checks
 - **visual**: screenshot baselines for important rendered surfaces
 
-The config starts Storybook and a built/previewed demo app automatically.
+The config starts the docsite, Storybook, and a built/previewed demo app automatically.
 
 ## Documentation expectations
 
@@ -143,7 +191,7 @@ When behavior or public surface area changes, update the matching docs as part o
 
 ## Related docs
 
-- [Root README](../README.md)
+- [Introduction](intro.md)
 - [Architecture](architecture.md)
-- [`@pedigree/core` README](../packages/core/README.md)
-- [`@pedigree/react` README](../packages/react/README.md)
+- [Package map](package-map.md)
+- [API reference](/docs/api)

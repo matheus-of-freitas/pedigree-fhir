@@ -1,0 +1,61 @@
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      DOCSITE_URL: https://${{ github.repository_owner }}.github.io
+      DOCSITE_BASE_URL: /${{ github.event.repository.name }}/
+      STORYBOOK_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/storybook/
+      STORYBOOK_DOCSITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+      STORYBOOK_BASE_URL: /${{ github.event.repository.name }}/storybook/
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Pages artifact
+        run: pnpm run pages:build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/pages
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

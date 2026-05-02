@@ -12,6 +12,10 @@ debug-storybook.log
 .env
 .env.local
 .turbo
+docs/api
+**/.docusaurus
+**/.cache-loader
+apps/docs/build
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json

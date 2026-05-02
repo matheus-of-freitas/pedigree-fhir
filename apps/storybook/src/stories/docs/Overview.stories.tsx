@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 function Overview() {
+  const docsiteUrl = import.meta.env.STORYBOOK_DOCSITE_URL ?? 'http://localhost:3000';
+
   return (
     <main
       style={{
@@ -28,10 +30,29 @@ function Overview() {
           Parse family-history FHIR, compute PSC-aware pedigree layout, render it with any UI kit.
         </h1>
         <p style={{ margin: 0, maxWidth: 760, fontSize: 17, lineHeight: 1.55 }}>
-          This Storybook is the docs surface for the v1 plan: primitives prove the headless React
-          adapter, milestone stories exercise interactions and validation, and visual snapshots lock
-          down subtle PSC symbols.
+          This Storybook is the playground for the library: use it to inspect primitives, editing
+          flows, validation states, PSC semantics, and concrete use cases while the Docusaurus
+          docsite owns the guides and API reference.
         </p>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <a
+            href={docsiteUrl}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 44,
+              padding: '0 18px',
+              borderRadius: 999,
+              background: '#111827',
+              color: '#fff',
+              textDecoration: 'none',
+              fontWeight: 600,
+            }}
+          >
+            Open docs site
+          </a>
+        </div>
       </section>
 
       <section
@@ -45,6 +66,10 @@ function Overview() {
         {[
           ['Core', 'Parse, infer, serialize, validate, and lay out a pedigree without React.'],
           ['React', 'Expose provider, hooks, and render-prop primitives while staying theme-free.'],
+          [
+            'Guides',
+            'Use the Docusaurus docsite for getting started, architecture, package map, and API reference.',
+          ],
           [
             'PSC',
             'Render twins, consanguinity, pregnancy outcomes, adoption, proband, and vital marks.',
@@ -77,7 +102,7 @@ const meta: Meta<typeof Overview> = {
     docs: {
       description: {
         component:
-          'A Storybook-native documentation landing page that summarizes the v1 architecture and verification surface.',
+          'Landing page for the interactive playground surface, cross-linked with the Docusaurus guides and API reference.',
       },
     },
   },

@@ -1,0 +1,70 @@
+.hero {
+  padding: 5rem 1.5rem 3rem;
+  background: radial-gradient(circle at top left, rgba(112, 99, 255, 0.24), transparent 32%),
+    radial-gradient(circle at top right, rgba(36, 191, 173, 0.18), transparent 28%),
+    linear-gradient(180deg, rgba(20, 28, 44, 0.06), transparent 72%);
+}
+
+.heroInner {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.kicker {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ifm-color-primary);
+}
+
+.title {
+  margin-bottom: 1rem;
+  font-size: clamp(2.6rem, 5vw, 4.4rem);
+  line-height: 1.02;
+}
+
+.subtitle {
+  max-width: 720px;
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 2rem;
+}
+
+.main {
+  padding: 0 1.5rem 4rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.card {
+  padding: 1.25rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--ifm-background-surface-color) 92%, white);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05);
+}
+
+.card h2 {
+  margin-bottom: 0.75rem;
+  font-size: 1.2rem;
+}
+
+.card p {
+  margin-bottom: 0.9rem;
+}

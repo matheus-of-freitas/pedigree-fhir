@@ -1,3 +1,9 @@
+---
+title: Architecture
+description: System layers, data flow, and how the packages and proof surfaces fit together.
+sidebar_position: 5
+---
+
 # Architecture
 
 This document explains the current system architecture of `pedigree-fhir` as implemented in the repository today.

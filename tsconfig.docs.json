@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "paths": {
+      "@pedigree/core": ["./packages/core/src/index.ts"],
+      "@pedigree/react": ["./packages/react/src/index.ts"]
+    }
+  },
+  "include": ["packages/core/src/**/*", "packages/react/src/**/*"],
+  "exclude": ["**/dist/**", "**/node_modules/**", "**/tests/**"]
+}

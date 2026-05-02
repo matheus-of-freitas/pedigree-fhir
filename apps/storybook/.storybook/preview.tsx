@@ -50,6 +50,21 @@ const preview: Preview = {
       matchers: { color: /(background|color)$/i, date: /Date$/i },
     },
     layout: 'padded',
+    options: {
+      storySort: {
+        order: [
+          'Docs',
+          'Use cases',
+          'Compositions',
+          'Interactivity',
+          'Editing',
+          'Validation',
+          'PSC',
+          'Themes',
+          'Primitives',
+        ],
+      },
+    },
   },
 };
 

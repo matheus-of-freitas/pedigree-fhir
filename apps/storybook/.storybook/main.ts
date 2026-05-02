@@ -14,6 +14,7 @@ const config: StorybookConfig = {
     reactDocgen: 'react-docgen-typescript',
   },
   async viteFinal(config) {
+    config.base = process.env.STORYBOOK_BASE_URL ?? '/';
     config.resolve = config.resolve ?? {};
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),

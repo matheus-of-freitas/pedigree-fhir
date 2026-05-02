@@ -50,6 +50,9 @@ jobs:
       - name: Build Storybook static
         run: pnpm -F @pedigree/storybook build
 
+      - name: Build docs site
+        run: pnpm -F @pedigree/docs build
+
       - name: Cache Playwright browsers
         id: pw-cache
         uses: actions/cache@v4
