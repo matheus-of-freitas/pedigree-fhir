@@ -9,8 +9,8 @@ import {
   inferRelationships,
   parsePedigree,
   resolveIndividualDisplayLabel,
-} from '@pedigree/core';
-import { Edge, Node, Pedigree, PedigreeProvider, Sibship } from '@pedigree/react';
+} from '@pedigree-fhir/core';
+import { Edge, Node, Pedigree, PedigreeProvider, Sibship } from '@pedigree-fhir/react';
 import { type ReactNode, useMemo } from 'react';
 import type { Fixture } from '../fixtures/three-gen.js';
 import { NodeLabel } from './NodeLabel.js';

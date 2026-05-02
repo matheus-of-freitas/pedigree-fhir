@@ -27,7 +27,7 @@ flowchart TD
     B["FamilyMemberHistory array"]
   end
 
-  subgraph Core["@pedigree/core"]
+  subgraph Core["@pedigree-fhir/core"]
     C["parsePedigree"]
     D["inferRelationships"]
     E["PedigreeGraph"]
@@ -36,7 +36,7 @@ flowchart TD
     H["defaultRegistry / createRegistry"]
   end
 
-  subgraph React["@pedigree/react"]
+  subgraph React["@pedigree-fhir/react"]
     I["PedigreeProvider"]
     J["Hooks"]
     K["Render-prop primitives"]
@@ -173,7 +173,7 @@ This is important architecturally because validation runs alongside the graph an
 
 ## React adapter
 
-`@pedigree/react` wraps the core store with:
+`@pedigree-fhir/react` wraps the core store with:
 
 - a provider (`PedigreeProvider`)
 - hooks for slices of state and action surfaces

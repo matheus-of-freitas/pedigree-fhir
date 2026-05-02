@@ -1,4 +1,4 @@
-import type { IndividualId } from '@pedigree/core';
+import type { IndividualId } from '@pedigree-fhir/core';
 import { useSyncExternalStore } from 'react';
 import { usePedigreeStore } from '../context.js';
 

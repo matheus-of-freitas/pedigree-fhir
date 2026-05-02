@@ -5,6 +5,7 @@ coverage
 storybook-static
 playwright-report
 test-results
+.release-tmp
 **/stryker-tmp/
 .DS_Store
 *.log

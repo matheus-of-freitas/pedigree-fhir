@@ -8,8 +8,8 @@ import type {
   Sex,
   TwinType,
   VitalStatus,
-} from '@pedigree/core';
-import { canRedo, canUndo } from '@pedigree/core';
+} from '@pedigree-fhir/core';
+import { canRedo, canUndo } from '@pedigree-fhir/core';
 import { useSyncExternalStore } from 'react';
 import { usePedigreeStore } from '../context.js';
 

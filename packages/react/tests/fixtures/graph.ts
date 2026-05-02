@@ -8,7 +8,7 @@ import {
   createPedigreeStore,
   inferRelationships,
   parsePedigree,
-} from '@pedigree/core';
+} from '@pedigree-fhir/core';
 
 const V3_ROLE = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';
 const V3_FAMILY = 'http://terminology.hl7.org/CodeSystem/v3-RoleCode';

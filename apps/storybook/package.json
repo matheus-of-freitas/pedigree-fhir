@@ -9,8 +9,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@pedigree/core": "workspace:*",
-    "@pedigree/react": "workspace:*",
+    "@pedigree-fhir/core": "workspace:*",
+    "@pedigree-fhir/react": "workspace:*",
     "@mantine/core": "^7.13.0",
     "@mantine/hooks": "^7.13.0",
     "@radix-ui/themes": "^3.3.0",

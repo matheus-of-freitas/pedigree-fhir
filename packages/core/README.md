@@ -1,10 +1,10 @@
-# @pedigree/core
+# @pedigree-fhir/core
 
 Framework-agnostic core for FHIR-driven pedigree graphs: parsing, relationship inference, PSC semantics, layout, state, editing, history, and validation.
 
 ## Responsibilities
 
-`@pedigree/core` owns the domain and state model for the library. It does **not** depend on React and does **not** render anything. Instead, it gives consumers:
+`@pedigree-fhir/core` owns the domain and state model for the library. It does **not** depend on React and does **not** render anything. Instead, it gives consumers:
 
 - FHIR parsing from `Patient` and `FamilyMemberHistory`
 - relationship inference for common pedigree topology
@@ -53,7 +53,7 @@ import {
   defaultRegistry,
   inferRelationships,
   parsePedigree,
-} from '@pedigree/core';
+} from '@pedigree-fhir/core';
 
 const inputDiagnostics = validateFhirInput(patient, familyHistory);
 const parsed = parsePedigree(patient, familyHistory);
@@ -164,4 +164,4 @@ The core package is intentionally:
 - [Root README](../../README.md)
 - [Architecture docs](../../docs/architecture.md)
 - [Development docs](../../docs/development.md)
-- [`@pedigree/react` README](../react/README.md)
+- [`@pedigree-fhir/react` README](../react/README.md)

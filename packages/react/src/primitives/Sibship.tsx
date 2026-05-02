@@ -1,4 +1,4 @@
-import type { CoupleId, ParentDrop } from '@pedigree/core';
+import type { CoupleId, ParentDrop } from '@pedigree-fhir/core';
 import type { ReactNode } from 'react';
 import { useDrop } from '../hooks/useDrop.js';
 

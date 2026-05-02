@@ -10,7 +10,7 @@ import {
   VitalStatus,
   inferRelationships,
   parsePedigree,
-} from '@pedigree/core';
+} from '@pedigree-fhir/core';
 import { threeGen } from './three-gen.js';
 
 function semantics(args: {

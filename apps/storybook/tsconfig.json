@@ -4,8 +4,8 @@
     "jsx": "react-jsx",
     "noEmit": true,
     "paths": {
-      "@pedigree/core": ["../../packages/core/src/index.ts"],
-      "@pedigree/react": ["../../packages/react/src/index.ts"]
+      "@pedigree-fhir/core": ["../../packages/core/src/index.ts"],
+      "@pedigree-fhir/react": ["../../packages/react/src/index.ts"]
     }
   },
   "include": ["src/**/*", ".storybook/**/*"]

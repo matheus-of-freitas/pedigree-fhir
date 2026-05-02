@@ -7,7 +7,7 @@ import {
   inferRelationships,
   parsePedigree,
   serializePedigree,
-} from '@pedigree/core';
+} from '@pedigree-fhir/core';
 import {
   Edge,
   Node,
@@ -16,7 +16,7 @@ import {
   Sibship,
   usePedigree,
   usePedigreeStore,
-} from '@pedigree/react';
+} from '@pedigree-fhir/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { type ReactNode, useMemo, useState } from 'react';
 import { NodeLabel } from '../../components/NodeLabel.js';

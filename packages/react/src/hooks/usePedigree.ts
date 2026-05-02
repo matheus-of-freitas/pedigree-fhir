@@ -3,7 +3,7 @@ import {
   type LayoutOptions,
   type PedigreeGraph,
   computePedigreeLayout,
-} from '@pedigree/core';
+} from '@pedigree-fhir/core';
 import { useMemo, useSyncExternalStore } from 'react';
 import { usePedigreeStore } from '../context.js';
 

@@ -3,6 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 const STORYBOOK_PORT = 6006;
 const DEMO_PORT = 4173;
 const DOCS_PORT = 4300;
+const reuseWebServers =
+  process.env.CI !== 'true' && process.env.PLAYWRIGHT_REUSE_SERVER !== 'false';
 
 export default defineConfig({
   testDir: './e2e',
@@ -53,20 +55,20 @@ export default defineConfig({
       command:
         'pnpm -F @pedigree/docs build && pnpm -F @pedigree/docs serve --host 0.0.0.0 --port 4300',
       url: `http://localhost:${DOCS_PORT}`,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: reuseWebServers,
       timeout: 120_000,
     },
     {
       command: 'pnpm -F @pedigree/storybook dev',
       url: `http://localhost:${STORYBOOK_PORT}`,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: reuseWebServers,
       timeout: 120_000,
     },
     {
       command:
         'pnpm -F @pedigree/demo build && pnpm -F @pedigree/demo preview --port 4173 --strictPort',
       url: `http://localhost:${DEMO_PORT}`,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: reuseWebServers,
       timeout: 120_000,
     },
   ],

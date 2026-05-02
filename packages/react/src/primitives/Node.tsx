@@ -1,4 +1,4 @@
-import type { IndividualId } from '@pedigree/core';
+import type { IndividualId } from '@pedigree-fhir/core';
 import type { ReactNode } from 'react';
 import { type UseNodeResult, useNode } from '../hooks/useNode.js';
 

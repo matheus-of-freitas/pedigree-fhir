@@ -5,8 +5,8 @@ import {
   computeNodeLabelXOffsets,
   computeParentDropStemLabelObstacles,
   resolveIndividualDisplayLabel,
-} from '@pedigree/core';
-import { Edge, Node, Pedigree, Sibship } from '@pedigree/react';
+} from '@pedigree-fhir/core';
+import { Edge, Node, Pedigree, Sibship } from '@pedigree-fhir/react';
 import { NodeLabel } from './NodeLabel.js';
 
 export interface PedigreeViewProps {

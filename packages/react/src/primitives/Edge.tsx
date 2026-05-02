@@ -1,4 +1,4 @@
-import type { CoupleId, PartnerEdge } from '@pedigree/core';
+import type { CoupleId, PartnerEdge } from '@pedigree-fhir/core';
 import type { ReactNode } from 'react';
 import { useEdge } from '../hooks/useEdge.js';
 

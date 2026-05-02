@@ -1,4 +1,4 @@
-import { type Diagnostic, type RuleRegistry, defaultRegistry } from '@pedigree/core';
+import { type Diagnostic, type RuleRegistry, defaultRegistry } from '@pedigree-fhir/core';
 import { useMemo, useSyncExternalStore } from 'react';
 import { usePedigreeStore } from '../context.js';
 

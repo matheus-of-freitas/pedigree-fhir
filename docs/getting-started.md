@@ -11,11 +11,11 @@ sidebar_position: 2
 Choose the packages you need:
 
 ```bash
-pnpm add @pedigree/core @pedigree/react
+pnpm add @pedigree-fhir/core @pedigree-fhir/react
 ```
 
-`@pedigree/core` is enough for parsing, inference, layout, and validation. Add
-`@pedigree/react` when you want the React provider, hooks, and render-prop
+`@pedigree-fhir/core` is enough for parsing, inference, layout, and validation. Add
+`@pedigree-fhir/react` when you want the React provider, hooks, and render-prop
 primitives.
 
 ## Parse FHIR and create a store
@@ -26,7 +26,7 @@ import {
   inferRelationships,
   parsePedigree,
   validateFhirInput,
-} from '@pedigree/core';
+} from '@pedigree-fhir/core';
 
 const inputDiagnostics = validateFhirInput(patient, familyHistory);
 const graph = inferRelationships(parsePedigree(patient, familyHistory));
@@ -40,7 +40,7 @@ const store = createPedigreeStore({
 ## Provide the store in React
 
 ```tsx
-import { PedigreeProvider } from '@pedigree/react';
+import { PedigreeProvider } from '@pedigree-fhir/react';
 
 export function App() {
   return <PedigreeProvider store={store}>{/* your SVG/UI */}</PedigreeProvider>;
@@ -51,10 +51,10 @@ export function App() {
 
 The library is deliberately headless. The common pattern is:
 
-1. parse input resources with `@pedigree/core`
+1. parse input resources with `@pedigree-fhir/core`
 2. infer missing structural relationships
 3. create a store and compute layout
-4. use `@pedigree/react` to read the graph/layout and render your own SVG
+4. use `@pedigree-fhir/react` to read the graph/layout and render your own SVG
 
 If you want a working visual reference before integrating it into your own app,
 use the [Playground](./playground.mdx) and Storybook examples.

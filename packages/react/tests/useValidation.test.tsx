@@ -1,5 +1,5 @@
-import { Severity, Sex, createRegistry } from '@pedigree/core';
-import type { R4FamilyMemberHistory, R4Patient } from '@pedigree/core';
+import { Severity, Sex, createRegistry } from '@pedigree-fhir/core';
+import type { R4FamilyMemberHistory, R4Patient } from '@pedigree-fhir/core';
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';

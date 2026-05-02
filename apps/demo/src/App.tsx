@@ -1,5 +1,5 @@
-import { createPedigreeStore, inferRelationships, parsePedigree } from '@pedigree/core';
-import { PedigreeProvider } from '@pedigree/react';
+import { createPedigreeStore, inferRelationships, parsePedigree } from '@pedigree-fhir/core';
+import { PedigreeProvider } from '@pedigree-fhir/react';
 import { useMemo } from 'react';
 import { CancerHistoryView } from './CancerHistoryView.js';
 import { PedigreeView } from './PedigreeView.js';

@@ -5,7 +5,7 @@
     "outDir": "./dist",
     "jsx": "react-jsx",
     "paths": {
-      "@pedigree/core": ["../core/src/index.ts"]
+      "@pedigree-fhir/core": ["../core/src/index.ts"]
     }
   },
   "include": ["src/**/*"],

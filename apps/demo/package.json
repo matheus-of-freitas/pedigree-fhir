@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@pedigree/core": "workspace:*",
-    "@pedigree/react": "workspace:*",
+    "@pedigree-fhir/core": "workspace:*",
+    "@pedigree-fhir/react": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

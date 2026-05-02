@@ -1,4 +1,4 @@
-import type { CoupleId, PartnerEdge } from '@pedigree/core';
+import type { CoupleId, PartnerEdge } from '@pedigree-fhir/core';
 import { usePedigree } from './usePedigree.js';
 
 /** Look up the partner-edge layout entry for a couple. Returns `null` if absent. */

@@ -6,8 +6,8 @@ The repository is organized as a PNPM monorepo:
 
 | Package/App | Purpose |
 | --- | --- |
-| `@pedigree/core` | Framework-agnostic parsing, graph/model, PSC semantics, layout, state, editing, history, and validation |
-| `@pedigree/react` | React provider, hooks, and render-prop primitives on top of the headless core store |
+| `@pedigree-fhir/core` | Framework-agnostic parsing, graph/model, PSC semantics, layout, state, editing, history, and validation |
+| `@pedigree-fhir/react` | React provider, hooks, and render-prop primitives on top of the headless core store |
 | `@pedigree/docs` | Docusaurus docs site for guides and API reference |
 | `apps/demo` | Minimal Vite consumer proving the packages can drive different SVG presentations |
 | `apps/storybook` | Story-driven proof surface for primitives, interactivity, editing, validation, PSC, and themes |
@@ -80,10 +80,12 @@ pnpm install
 | `pnpm run test` | Run package Vitest suites |
 | `pnpm run test:coverage` | Run package tests with coverage |
 | `pnpm run mutation` | Run the opt-in Stryker mutation workflow for both packages |
-| `pnpm run build` | Build `@pedigree/core` and `@pedigree/react` |
+| `pnpm run build` | Build `@pedigree-fhir/core` and `@pedigree-fhir/react` |
 | `pnpm run docs:dev` | Start the local docs stack: Docusaurus + Storybook |
 | `pnpm run docs:build` | Build the Docusaurus docsite |
 | `pnpm run pages:build` | Build a combined GitHub Pages artifact with the docsite at `/` and Storybook at `/storybook` |
+| `pnpm run release:check` | Run the full pre-publish verification bar for the npm packages |
+| `pnpm run release:pack` | Create local npm tarballs for `@pedigree-fhir/core` and `@pedigree-fhir/react` in `.release-tmp/` |
 | `pnpm run e2e` | Run Playwright flow + visual tests |
 | `pnpm -F @pedigree/demo dev` | Start the demo app |
 | `pnpm -F @pedigree/storybook dev` | Start Storybook on port 6006 |
@@ -113,6 +115,30 @@ The production doc experience is intended to publish as a **single GitHub Pages 
 
 Use `pnpm run pages:build` to assemble that artifact locally into `dist/pages`.
 
+## Manual npm release
+
+The first npm release path in this repo is intentionally manual.
+
+Release targets:
+
+- `@pedigree-fhir/core`
+- `@pedigree-fhir/react`
+
+Recommended order:
+
+1. `npm login`
+2. `pnpm run release:check`
+3. `pnpm run release:pack`
+4. `pnpm run release:publish:core`
+5. `pnpm run release:publish:react`
+6. verify both packages with `npm view`
+
+The React package depends on the matching released core version, so publish
+**core first** and **react second**.
+
+`release:check` intentionally disables Playwright server reuse, so any stale
+local docs/demo/Storybook servers do not mask a broken release candidate.
+
 ## Package entry points
 
 - [`packages/core/README.md`](packages/core/README.md): parsing, graph, layout, state, validation
@@ -123,7 +149,7 @@ Use `pnpm run pages:build` to assemble that artifact locally into `dist/pages`.
 This is the smallest accurate end-to-end flow represented in the repo today:
 
 ```ts
-import { createPedigreeStore, inferRelationships, parsePedigree } from '@pedigree/core';
+import { createPedigreeStore, inferRelationships, parsePedigree } from '@pedigree-fhir/core';
 
 const graph = inferRelationships(parsePedigree(patient, familyHistory));
 const store = createPedigreeStore({
@@ -135,7 +161,7 @@ const store = createPedigreeStore({
 In React, you then provide that store and render your own UI:
 
 ```tsx
-import { PedigreeProvider, Pedigree } from '@pedigree/react';
+import { PedigreeProvider, Pedigree } from '@pedigree-fhir/react';
 
 <PedigreeProvider store={store}>
   <Pedigree>
@@ -155,8 +181,8 @@ import { PedigreeProvider, Pedigree } from '@pedigree/react';
 - [Playground guide](docs/playground.mdx)
 - [Architecture](docs/architecture.md)
 - [Development](docs/development.md)
-- [`@pedigree/core` README](packages/core/README.md)
-- [`@pedigree/react` README](packages/react/README.md)
+- [`@pedigree-fhir/core` README](packages/core/README.md)
+- [`@pedigree-fhir/react` README](packages/react/README.md)
 
 ## Documentation surfaces
 

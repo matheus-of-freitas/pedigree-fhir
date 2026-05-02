@@ -8,8 +8,8 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@pedigree/core': `${here}../../packages/core/src/index.ts`,
-      '@pedigree/react': `${here}../../packages/react/src/index.ts`,
+      '@pedigree-fhir/core': `${here}../../packages/core/src/index.ts`,
+      '@pedigree-fhir/react': `${here}../../packages/react/src/index.ts`,
     },
   },
 });

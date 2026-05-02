@@ -16,7 +16,7 @@ import {
   parsePedigree,
   resolveIndividualDisplayLabel,
   wrapLabelLines,
-} from '@pedigree/core';
+} from '@pedigree-fhir/core';
 import { cancerFamilyHistory, cancerProband } from './cancerFixture.js';
 
 const NODE_SIZE = 40;

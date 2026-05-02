@@ -9,5 +9,5 @@ export default defineConfig({
   treeshake: true,
   splitting: false,
   target: 'es2022',
-  external: ['react', 'react-dom', '@pedigree/core'],
+  external: ['react', 'react-dom', '@pedigree-fhir/core'],
 });

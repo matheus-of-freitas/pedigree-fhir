@@ -1,4 +1,4 @@
-import type { Individual, IndividualId, NodeLayout } from '@pedigree/core';
+import type { Individual, IndividualId, NodeLayout } from '@pedigree-fhir/core';
 import { usePedigree } from './usePedigree.js';
 
 export interface UseNodeResult {

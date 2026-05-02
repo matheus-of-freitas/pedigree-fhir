@@ -18,7 +18,7 @@ const quickLinks = [
   },
   {
     title: 'Package map',
-    body: 'Understand how @pedigree/core, @pedigree/react, the demo app, and Storybook fit together.',
+    body: 'Understand how @pedigree-fhir/core, @pedigree-fhir/react, the demo app, and Storybook fit together.',
     to: '/docs/package-map',
   },
   {

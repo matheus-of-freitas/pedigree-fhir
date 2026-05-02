@@ -1,5 +1,5 @@
-import { createPedigreeStore, inferRelationships, parsePedigree } from '@pedigree/core';
-import { Pedigree, PedigreeProvider, Sibship } from '@pedigree/react';
+import { createPedigreeStore, inferRelationships, parsePedigree } from '@pedigree-fhir/core';
+import { Pedigree, PedigreeProvider, Sibship } from '@pedigree-fhir/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useMemo } from 'react';
 import { threeGen } from '../../fixtures/three-gen.js';

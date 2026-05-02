@@ -18,8 +18,8 @@ const config: StorybookConfig = {
     config.resolve = config.resolve ?? {};
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),
-      '@pedigree/core': `${here}../../packages/core/src/index.ts`,
-      '@pedigree/react': `${here}../../packages/react/src/index.ts`,
+      '@pedigree-fhir/core': `${here}../../packages/core/src/index.ts`,
+      '@pedigree-fhir/react': `${here}../../packages/react/src/index.ts`,
     };
     return config;
   },

@@ -1,12 +1,12 @@
-# @pedigree/react
+# @pedigree-fhir/react
 
-Headless React adapter for `@pedigree/core`: provider, hooks, and render-prop primitives for consuming the pedigree store and layout surface without imposing styling.
+Headless React adapter for `@pedigree-fhir/core`: provider, hooks, and render-prop primitives for consuming the pedigree store and layout surface without imposing styling.
 
 ## What this package is for
 
-`@pedigree/react` exists to make the core package ergonomic in React applications while preserving the headless design:
+`@pedigree-fhir/react` exists to make the core package ergonomic in React applications while preserving the headless design:
 
-- **you** create the store with `@pedigree/core`
+- **you** create the store with `@pedigree-fhir/core`
 - **you** decide how to memoize and provide it
 - **you** own the final SVG or UI
 - this package only exposes the store cleanly to React and scopes render helpers around the layout data
@@ -46,7 +46,7 @@ See [`src/index.ts`](src/index.ts) for the exact export surface.
 Create the store in application code:
 
 ```ts
-import { createPedigreeStore, inferRelationships, parsePedigree } from '@pedigree/core';
+import { createPedigreeStore, inferRelationships, parsePedigree } from '@pedigree-fhir/core';
 
 const graph = inferRelationships(parsePedigree(patient, familyHistory));
 const store = createPedigreeStore({ graph, layoutOptions: {} });
@@ -55,7 +55,7 @@ const store = createPedigreeStore({ graph, layoutOptions: {} });
 Then provide it to React:
 
 ```tsx
-import { PedigreeProvider } from '@pedigree/react';
+import { PedigreeProvider } from '@pedigree-fhir/react';
 
 <PedigreeProvider store={store}>{children}</PedigreeProvider>;
 ```
@@ -65,8 +65,8 @@ import { PedigreeProvider } from '@pedigree/react';
 The package centers around `Pedigree`, which gives you the current graph and layout:
 
 ```tsx
-import { Edge, Node, Pedigree, PedigreeProvider, Sibship } from '@pedigree/react';
-import { resolveIndividualDisplayLabel } from '@pedigree/core';
+import { Edge, Node, Pedigree, PedigreeProvider, Sibship } from '@pedigree-fhir/react';
+import { resolveIndividualDisplayLabel } from '@pedigree-fhir/core';
 
 <PedigreeProvider store={store}>
   <Pedigree>
@@ -131,7 +131,7 @@ That pattern is what keeps the package theme-free: the library gives you topolog
 
 This package is intentionally:
 
-- **thin**: the domain logic stays in `@pedigree/core`
+- **thin**: the domain logic stays in `@pedigree-fhir/core`
 - **unstyled**: no opinionated visual system is shipped
 - **store-backed**: hooks subscribe to the external core store
 - **composable**: hooks and primitives can be mixed depending on the UI you are building
@@ -139,6 +139,6 @@ This package is intentionally:
 ## Where to look next
 
 - [Root README](../../README.md)
-- [`@pedigree/core` README](../core/README.md)
+- [`@pedigree-fhir/core` README](../core/README.md)
 - [Architecture docs](../../docs/architecture.md)
 - [Development docs](../../docs/development.md)

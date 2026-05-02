@@ -1,6 +1,6 @@
 {
-  "name": "@pedigree/core",
-  "version": "0.0.0",
+  "name": "@pedigree-fhir/core",
+  "version": "0.1.0",
   "description": "Headless, framework-agnostic core for FHIR-driven pedigree charts: parsing, model, layout, state, validation.",
   "license": "MIT",
   "type": "module",

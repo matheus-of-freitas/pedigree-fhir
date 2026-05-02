@@ -1,4 +1,11 @@
-import { Adopted, AffectedStatus, CarrierStatus, Sex, TwinType, VitalStatus } from '@pedigree/core';
+import {
+  Adopted,
+  AffectedStatus,
+  CarrierStatus,
+  Sex,
+  TwinType,
+  VitalStatus,
+} from '@pedigree-fhir/core';
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';

@@ -38,10 +38,10 @@ importers:
 
   apps/demo:
     dependencies:
-      '@pedigree/core':
+      '@pedigree-fhir/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@pedigree/react':
+      '@pedigree-fhir/react':
         specifier: workspace:*
         version: link:../../packages/react
       react:
@@ -127,10 +127,10 @@ importers:
       '@mantine/hooks':
         specifier: ^7.13.0
         version: 7.17.8(react@18.3.1)
-      '@pedigree/core':
+      '@pedigree-fhir/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@pedigree/react':
+      '@pedigree-fhir/react':
         specifier: workspace:*
         version: link:../../packages/react
       '@radix-ui/themes':
@@ -198,8 +198,8 @@ importers:
 
   packages/react:
     dependencies:
-      '@pedigree/core':
-        specifier: workspace:*
+      '@pedigree-fhir/core':
+        specifier: workspace:^
         version: link:../core
     devDependencies:
       '@testing-library/react':
@@ -328,10 +328,6 @@ packages:
 
   '@babel/code-frame@7.29.0':
     resolution: {integrity: sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/compat-data@7.29.0':
-    resolution: {integrity: sha512-T1NCJqT/j9+cn8fvkt7jtwbLBfLC/1y1c7NtCeXFRgzGTsafi68MRv8yzkYSapBnFA6L3U2VSc02ciDzoAJhJg==}
     engines: {node: '>=6.9.0'}
 
   '@babel/compat-data@7.29.3':
@@ -8611,8 +8607,6 @@ snapshots:
       js-tokens: 4.0.0
       picocolors: 1.1.1
 
-  '@babel/compat-data@7.29.0': {}
-
   '@babel/compat-data@7.29.3': {}
 
   '@babel/core@7.29.0':
@@ -8649,7 +8643,7 @@ snapshots:
 
   '@babel/helper-compilation-targets@7.28.6':
     dependencies:
-      '@babel/compat-data': 7.29.0
+      '@babel/compat-data': 7.29.3
       '@babel/helper-validator-option': 7.27.1
       browserslist: 4.28.2
       lru-cache: 5.1.1
@@ -13625,7 +13619,7 @@ snapshots:
 
   compressible@2.0.18:
     dependencies:
-      mime-db: 1.52.0
+      mime-db: 1.54.0
 
   compression@1.8.1:
     dependencies:

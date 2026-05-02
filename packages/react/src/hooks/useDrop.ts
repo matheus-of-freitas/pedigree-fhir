@@ -1,4 +1,4 @@
-import type { CoupleId, ParentDrop } from '@pedigree/core';
+import type { CoupleId, ParentDrop } from '@pedigree-fhir/core';
 import { usePedigree } from './usePedigree.js';
 
 /** Look up the parent-drop layout entry for a couple. Returns `null` if absent. */

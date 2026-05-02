@@ -1,4 +1,4 @@
-import { type Diagnostic, validateFhirInput } from '@pedigree/core';
+import { type Diagnostic, validateFhirInput } from '@pedigree-fhir/core';
 import { useMemo } from 'react';
 
 export interface UseInputValidationResult {

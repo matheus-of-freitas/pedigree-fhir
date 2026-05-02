@@ -1,4 +1,4 @@
-import { wrapLabelLines } from '@pedigree/core';
+import { wrapLabelLines } from '@pedigree-fhir/core';
 
 export interface NodeLabelProps {
   label: string | undefined;

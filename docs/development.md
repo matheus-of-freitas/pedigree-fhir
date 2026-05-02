@@ -43,11 +43,15 @@ Run all commands from the repo root unless noted otherwise.
 | `pnpm run test` | Run package tests |
 | `pnpm run test:coverage` | Run package tests with coverage |
 | `pnpm run mutation` | Run the opt-in mutation workflow for both packages |
-| `pnpm run mutation:core` | Run Stryker against `@pedigree/core` |
-| `pnpm run mutation:react` | Run Stryker against `@pedigree/react` |
+| `pnpm run mutation:core` | Run Stryker against `@pedigree-fhir/core` |
+| `pnpm run mutation:react` | Run Stryker against `@pedigree-fhir/react` |
 | `pnpm run build` | Build the publishable packages |
 | `pnpm run docs:build` | Build the Docusaurus docsite |
 | `pnpm run pages:build` | Build the combined GitHub Pages artifact with Docusaurus at `/` and Storybook at `/storybook` |
+| `pnpm run release:check` | Run the full verification bar before publishing to npm |
+| `pnpm run release:pack` | Create local npm tarballs for `@pedigree-fhir/core` and `@pedigree-fhir/react` in `.release-tmp/` |
+| `pnpm run release:publish:core` | Publish `@pedigree-fhir/core` to npm |
+| `pnpm run release:publish:react` | Publish `@pedigree-fhir/react` to npm |
 | `pnpm run e2e` | Run Playwright flow and visual suites |
 | `pnpm run e2e:update` | Refresh Playwright visual baselines |
 
@@ -96,6 +100,63 @@ That produces a single static artifact in `dist/pages` with:
 
 - the docsite at the artifact root
 - Storybook copied into `dist/pages/storybook`
+
+## Manual npm release
+
+The repo is prepared for a **manual first npm release** of:
+
+- `@pedigree-fhir/core`
+- `@pedigree-fhir/react`
+
+### Prerequisites
+
+1. own or control the npm scope `@pedigree-fhir`
+2. log in with `npm login`
+3. make sure the worktree is clean before publishing
+
+### Release steps
+
+1. run the full verification bar:
+
+   ```bash
+   pnpm run release:check
+   ```
+
+   This disables Playwright server reuse on purpose, so the release check does
+   not silently rely on already-running local docs, demo, or Storybook servers.
+
+2. build local tarballs and inspect them:
+
+   ```bash
+   pnpm run release:pack
+   ```
+
+3. publish the core package first:
+
+   ```bash
+   pnpm run release:publish:core
+   ```
+
+4. publish the React package second:
+
+   ```bash
+   pnpm run release:publish:react
+   ```
+
+5. verify npm sees the versions:
+
+   ```bash
+   npm view @pedigree-fhir/core version
+   npm view @pedigree-fhir/react version
+   ```
+
+6. verify installability from a clean consumer app
+
+### Why the order matters
+
+`@pedigree-fhir/react` publishes with a semver dependency on
+`@pedigree-fhir/core`, so the core package must exist on npm before the React
+package is published.
 
 ## Coverage expectation
 
@@ -183,7 +244,7 @@ When behavior or public surface area changes, update the matching docs as part o
 
 ## Recommended workflow for feature work
 
-1. Understand whether the change belongs in `@pedigree/core`, `@pedigree/react`, or only in the proof surfaces.
+1. Understand whether the change belongs in `@pedigree-fhir/core`, `@pedigree-fhir/react`, or only in the proof surfaces.
 2. Add or update tests before considering the work complete.
 3. Use Storybook to inspect the behavior in isolation.
 4. Use Playwright when the behavior matters in the browser or visually.

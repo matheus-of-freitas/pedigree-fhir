@@ -12,8 +12,8 @@ the result with consumer-owned UI.
 
 The library is intentionally split into two publishable packages:
 
-- `@pedigree/core` for parsing, inference, layout, state, editing, and validation
-- `@pedigree/react` for the provider, hooks, and render-prop primitives that make
+- `@pedigree-fhir/core` for parsing, inference, layout, state, editing, and validation
+- `@pedigree-fhir/react` for the provider, hooks, and render-prop primitives that make
   the headless core ergonomic in React
 
 The repository also ships two proof surfaces:

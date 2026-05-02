@@ -9,7 +9,7 @@ import {
   inferRelationships,
   parsePedigree,
   resolveIndividualDisplayLabel,
-} from '@pedigree/core';
+} from '@pedigree-fhir/core';
 import {
   Edge,
   Node,
@@ -18,7 +18,7 @@ import {
   Sibship,
   useCompact,
   useSelection,
-} from '@pedigree/react';
+} from '@pedigree-fhir/react';
 import { type ReactNode, useMemo } from 'react';
 import type { Fixture } from '../fixtures/three-gen.js';
 import { NodeLabel } from './NodeLabel.js';

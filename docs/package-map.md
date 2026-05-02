@@ -10,8 +10,8 @@ The monorepo is split into publishable packages plus proof surfaces:
 
 | Package/App | Purpose |
 | --- | --- |
-| `@pedigree/core` | Headless parsing, graph/model, PSC semantics, layout, state, editing, history, and validation |
-| `@pedigree/react` | React provider, hooks, and render-prop primitives on top of the core store/layout surface |
+| `@pedigree-fhir/core` | Headless parsing, graph/model, PSC semantics, layout, state, editing, history, and validation |
+| `@pedigree-fhir/react` | React provider, hooks, and render-prop primitives on top of the core store/layout surface |
 | `@pedigree/docs` | Docusaurus site for guides, architecture notes, and API reference |
 | `@pedigree/storybook` | Interactive playground and examples surface |
 | `@pedigree/demo` | Minimal consumer application |
@@ -19,9 +19,9 @@ The monorepo is split into publishable packages plus proof surfaces:
 
 ## Which package do I need?
 
-- Use **`@pedigree/core` only** if you want parsing, inference, layout, and
+- Use **`@pedigree-fhir/core` only** if you want parsing, inference, layout, and
   validation in a non-React environment.
-- Add **`@pedigree/react`** if your application is in React and you want the
+- Add **`@pedigree-fhir/react`** if your application is in React and you want the
   provider/hook/render-prop integration layer.
 - Use **Storybook** when you want to inspect behavior, compare themes, or explore
   example use cases before building your own renderer.
