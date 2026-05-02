@@ -139,6 +139,36 @@ The React package depends on the matching released core version, so publish
 `release:check` intentionally disables Playwright server reuse, so any stale
 local docs/demo/Storybook servers do not mask a broken release candidate.
 
+## Automated npm publish
+
+Once the `@pedigree-fhir` scope exists and npm trusted publishing is configured
+for this repository, releases can be triggered from GitHub Actions with the
+**Publish npm packages** workflow.
+
+Recommended operator flow:
+
+1. commit the new package version(s) to `main`
+2. open **Actions → Publish npm packages**
+3. run the workflow from the `main` branch
+
+What the workflow does:
+
+1. runs `pnpm run release:check`
+2. checks whether each package version already exists on npm
+3. publishes `@pedigree-fhir/core` first if needed
+4. confirms the core version is available on npm
+5. publishes `@pedigree-fhir/react` if needed
+
+Important notes:
+
+- the workflow is **manual dispatch only** for the first automation pass
+- it is designed for **npm trusted publishing** via GitHub Actions OIDC rather
+  than a long-lived npm token
+- if npm requires the package entry to exist before trusted publishing can be
+  configured, complete the first successful manual publish first
+- rerunning the workflow is safe for already-published versions because it skips
+  versions that already exist on npm
+
 ## Package entry points
 
 - [`packages/core/README.md`](packages/core/README.md): parsing, graph, layout, state, validation

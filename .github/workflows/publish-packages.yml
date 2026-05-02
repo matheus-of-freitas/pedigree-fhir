@@ -1,0 +1,144 @@
+name: Publish npm packages
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: npm-publish-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      CI: 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require main branch
+        run: |
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
+            echo "This workflow only publishes from main." >&2
+            exit 1
+          fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browsers
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Read package metadata
+        id: packages
+        run: |
+          node <<'NODE' >> "$GITHUB_OUTPUT"
+          const fs = require('fs');
+
+          for (const [key, path] of [
+            ['core', 'packages/core/package.json'],
+            ['react', 'packages/react/package.json'],
+          ]) {
+            const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));
+            console.log(`${key}_name=${pkg.name}`);
+            console.log(`${key}_version=${pkg.version}`);
+          }
+          NODE
+
+      - name: Check npm registry state
+        id: registry
+        env:
+          CORE_NAME: ${{ steps.packages.outputs.core_name }}
+          CORE_VERSION: ${{ steps.packages.outputs.core_version }}
+          REACT_NAME: ${{ steps.packages.outputs.react_name }}
+          REACT_VERSION: ${{ steps.packages.outputs.react_version }}
+        run: |
+          if npm view "${CORE_NAME}@${CORE_VERSION}" version >/dev/null 2>&1; then
+            echo "core_published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "core_published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if npm view "${REACT_NAME}@${REACT_VERSION}" version >/dev/null 2>&1; then
+            echo "react_published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "react_published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate registry state
+        if: steps.registry.outputs.react_published == 'true' && steps.registry.outputs.core_published != 'true'
+        run: |
+          echo "React is already published for this version, but core is not." >&2
+          echo "Resolve the registry state before retrying this workflow." >&2
+          exit 1
+
+      - name: Verify release candidate
+        run: pnpm run release:check
+
+      - name: Publish core package
+        if: steps.registry.outputs.core_published != 'true'
+        working-directory: packages/core
+        run: pnpm publish --provenance --access public --no-git-checks
+
+      - name: Confirm core version is available for React
+        if: steps.registry.outputs.react_published != 'true'
+        env:
+          CORE_NAME: ${{ steps.packages.outputs.core_name }}
+          CORE_VERSION: ${{ steps.packages.outputs.core_version }}
+        run: npm view "${CORE_NAME}@${CORE_VERSION}" version
+
+      - name: Publish react package
+        if: steps.registry.outputs.react_published != 'true'
+        working-directory: packages/react
+        run: pnpm publish --provenance --access public --no-git-checks
+
+      - name: Summarize publish result
+        env:
+          CORE_NAME: ${{ steps.packages.outputs.core_name }}
+          CORE_VERSION: ${{ steps.packages.outputs.core_version }}
+          REACT_NAME: ${{ steps.packages.outputs.react_name }}
+          REACT_VERSION: ${{ steps.packages.outputs.react_version }}
+          CORE_PUBLISHED: ${{ steps.registry.outputs.core_published }}
+          REACT_PUBLISHED: ${{ steps.registry.outputs.react_published }}
+        run: |
+          {
+            echo "## npm publish summary"
+            echo ""
+            if [ "${CORE_PUBLISHED}" = "true" ]; then
+              echo "- ${CORE_NAME}@${CORE_VERSION}: already existed on npm, skipped"
+            else
+              echo "- ${CORE_NAME}@${CORE_VERSION}: published in this run"
+            fi
+
+            if [ "${REACT_PUBLISHED}" = "true" ]; then
+              echo "- ${REACT_NAME}@${REACT_VERSION}: already existed on npm, skipped"
+            else
+              echo "- ${REACT_NAME}@${REACT_VERSION}: published in this run"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

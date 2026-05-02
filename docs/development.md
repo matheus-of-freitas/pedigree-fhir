@@ -158,6 +158,43 @@ The repo is prepared for a **manual first npm release** of:
 `@pedigree-fhir/core`, so the core package must exist on npm before the React
 package is published.
 
+## Automated npm publish
+
+After the `@pedigree-fhir` scope exists and npm trusted publishing is configured
+for this repository, releases can be triggered from GitHub Actions with the
+**Publish npm packages** workflow.
+
+### Recommended trigger model
+
+The first automation pass is intentionally **manual**:
+
+- trigger the workflow with `workflow_dispatch`
+- run it only from `main`
+- keep version bumps explicit in committed package manifests
+
+This avoids accidental publishes while still removing the manual shell steps.
+
+### Workflow behavior
+
+The workflow:
+
+1. installs dependencies and Playwright browsers
+2. runs `pnpm run release:check`
+3. checks whether `@pedigree-fhir/core` and `@pedigree-fhir/react` at the
+   committed versions already exist on npm
+4. publishes core first if the version is not already present
+5. verifies that the core version exists on npm before attempting React
+6. publishes React if its version is not already present
+
+### npm configuration prerequisite
+
+The workflow is designed for **npm trusted publishing** from GitHub Actions.
+
+Before using it, configure npm so each package trusts this repository/workflow.
+If npm requires the package entry to exist before trusted publishing can be
+configured, do the first successful publish manually, then switch to the
+workflow for later releases.
+
 ## Coverage expectation
 
 The project standard is **100% package coverage**.
