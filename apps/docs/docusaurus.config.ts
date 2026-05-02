@@ -20,6 +20,7 @@ const config: Config = {
   projectName: 'pedigree',
   onBrokenLinks: 'throw',
   markdown: {
+    mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: 'throw',
     },
@@ -67,6 +68,7 @@ const config: Config = {
       },
     ],
   ],
+  themes: ['@docusaurus/theme-mermaid'],
   themeConfig: {
     colorMode: {
       respectPrefersColorScheme: true,
