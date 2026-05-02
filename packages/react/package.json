@@ -3,6 +3,15 @@
   "version": "0.1.0",
   "description": "Headless React adapter for @pedigree-fhir/core: hooks and render-prop primitives, no styling.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matheus-of-freitas/pedigree.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://github.com/matheus-of-freitas/pedigree/tree/main/packages/react#readme",
+  "bugs": {
+    "url": "https://github.com/matheus-of-freitas/pedigree/issues"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

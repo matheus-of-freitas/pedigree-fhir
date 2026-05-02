@@ -195,6 +195,19 @@ If npm requires the package entry to exist before trusted publishing can be
 configured, do the first successful publish manually, then switch to the
 workflow for later releases.
 
+## Package registry visibility
+
+For this repository, **npmjs is the package registry source of truth**.
+
+- published package visibility in the repo README should link to the npm package
+  pages for `@pedigree-fhir/core` and `@pedigree-fhir/react`
+- GitHub Packages npm publishing is intentionally out of scope under the current
+  repository owner namespace (`matheus-of-freitas`) because it does not cleanly
+  match the published package scope `@pedigree-fhir/*`
+- if dual-registry publishing is required later, the clean path is moving to a
+  matching GitHub organization/owner namespace rather than using different names
+  across npmjs and GitHub Packages
+
 ## Coverage expectation
 
 The project standard is **100% package coverage**.

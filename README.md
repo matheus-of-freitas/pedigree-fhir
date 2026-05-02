@@ -1,5 +1,8 @@
 # pedigree-fhir
 
+[![npm @pedigree-fhir/core](https://img.shields.io/npm/v/%40pedigree-fhir%2Fcore?label=%40pedigree-fhir%2Fcore)](https://www.npmjs.com/package/@pedigree-fhir/core)
+[![npm @pedigree-fhir/react](https://img.shields.io/npm/v/%40pedigree-fhir%2Freact?label=%40pedigree-fhir%2Freact)](https://www.npmjs.com/package/@pedigree-fhir/react)
+
 Headless TypeScript toolkit for parsing pedigree-relevant FHIR resources, inferring family structure, computing PSC-aware pedigree layout, and rendering the result with consumer-owned UI.
 
 The repository is organized as a PNPM monorepo:
@@ -12,6 +15,20 @@ The repository is organized as a PNPM monorepo:
 | `apps/demo` | Minimal Vite consumer proving the packages can drive different SVG presentations |
 | `apps/storybook` | Story-driven proof surface for primitives, interactivity, editing, validation, PSC, and themes |
 | `e2e` | Playwright flow and visual regression coverage |
+
+## Package releases
+
+Published package visibility in this repository points to **npmjs**:
+
+| Package | npm |
+| --- | --- |
+| `@pedigree-fhir/core` | https://www.npmjs.com/package/@pedigree-fhir/core |
+| `@pedigree-fhir/react` | https://www.npmjs.com/package/@pedigree-fhir/react |
+
+GitHub Packages is intentionally **not** used as a second npm registry under the
+current repository owner namespace. The source of truth for JavaScript package
+distribution is npmjs, and the README links above are the repository-facing
+release visibility surface.
 
 ## What this project does
 
