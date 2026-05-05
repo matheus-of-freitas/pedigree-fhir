@@ -158,7 +158,7 @@ function PscGlyph(props: {
       {drawAdoptionBrackets({ adopted, stroke, half })}
       {proband && (
         <polygon
-          points={`${-half - 14},${half + 14} ${-half - 4},${half + 4} ${-half - 6},${half + 14}`}
+          points={`${-half - 14},${half + 8} ${-half - 4},${half - 2} ${-half - 6},${half + 8}`}
           fill={stroke}
         />
       )}

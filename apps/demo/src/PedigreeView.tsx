@@ -68,7 +68,7 @@ function IndividualGlyph(props: {
       )}
       {proband && (
         <polygon
-          points={`${-half - 12},${half + 12} ${-half - 4},${half + 4} ${-half - 8},${half + 12}`}
+          points={`${-half - 12},${half + 6} ${-half - 4},${half - 2} ${-half - 8},${half + 6}`}
           fill={stroke}
         />
       )}

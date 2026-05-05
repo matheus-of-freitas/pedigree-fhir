@@ -26,7 +26,6 @@ import type { Fixture } from '../fixtures/three-gen.js';
 
 const NODE_SIZE = 40;
 const LABEL_Y_OFFSET = 18;
-const PROBAND_LABEL_CLEARANCE = 10;
 const DETAIL_LAYOUT: LayoutOptions = {
   generationGap: 180,
   siblingPitch: 110,
@@ -135,7 +134,6 @@ export function CancerHistoryPedigreeView({
           const legendEntries = oncology.showLegend ? oncology.palette : [];
           const extraBottom =
             76 +
-            PROBAND_LABEL_CLEARANCE +
             maxWrappedLineCount * 14 +
             (profile === 'oncology-overlay' && legendEntries.length > 0 ? 44 : 0);
 
@@ -370,8 +368,8 @@ function formatConditionLine(
   return onsetAge === undefined ? label : `${label} ${onsetAge}`;
 }
 
-function getLabelBlockY(half: number, proband: boolean): number {
-  return half + LABEL_Y_OFFSET + (proband ? PROBAND_LABEL_CLEARANCE : 0);
+function getLabelBlockY(half: number): number {
+  return half + LABEL_Y_OFFSET;
 }
 
 function renderShape(
@@ -445,7 +443,7 @@ function DetailGlyph(props: {
       )}
       {proband && (
         <polygon
-          points={`${-half - 14},${half + 14} ${-half - 4},${half + 4} ${-half - 6},${half + 14}`}
+          points={`${-half - 14},${half + 8} ${-half - 4},${half - 2} ${-half - 6},${half + 8}`}
           fill={stroke}
         />
       )}
@@ -453,7 +451,7 @@ function DetailGlyph(props: {
         lines={labelLines}
         maxWidth={labelMaxWidth}
         x={labelOffsetX}
-        y={getLabelBlockY(half, proband)}
+        y={getLabelBlockY(half)}
       />
     </g>
   );
@@ -539,7 +537,7 @@ function OncologyGlyph(props: {
       )}
       {proband && (
         <polygon
-          points={`${-half - 14},${half + 14} ${-half - 4},${half + 4} ${-half - 6},${half + 14}`}
+          points={`${-half - 14},${half + 8} ${-half - 4},${half - 2} ${-half - 6},${half + 8}`}
           fill={stroke}
         />
       )}
@@ -547,7 +545,7 @@ function OncologyGlyph(props: {
         lines={labelLines}
         maxWidth={labelMaxWidth}
         x={labelOffsetX}
-        y={getLabelBlockY(half, proband)}
+        y={getLabelBlockY(half)}
       />
     </g>
   );

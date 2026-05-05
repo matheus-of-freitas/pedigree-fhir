@@ -21,7 +21,6 @@ import { cancerFamilyHistory, cancerProband } from './cancerFixture.js';
 
 const NODE_SIZE = 40;
 const LABEL_Y_OFFSET = 18;
-const PROBAND_LABEL_CLEARANCE = 10;
 const AS_OF_DATE = '2024-06-01';
 
 interface LabelLine {
@@ -64,7 +63,7 @@ export function CancerHistoryView() {
       countRenderedLines(labelLinesById.get(node.id) ?? [], labelWidths.get(node.id)),
     ),
   );
-  const extraBottom = 120 + PROBAND_LABEL_CLEARANCE + maxWrappedLineCount * 14;
+  const extraBottom = 120 + maxWrappedLineCount * 14;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -202,8 +201,8 @@ function formatConditionLine(condition: Parameters<typeof getConditionDisplay>[0
   return onsetAge === undefined ? label : `${label} ${onsetAge}`;
 }
 
-function getLabelBlockY(half: number, proband: boolean): number {
-  return half + LABEL_Y_OFFSET + (proband ? PROBAND_LABEL_CLEARANCE : 0);
+function getLabelBlockY(half: number): number {
+  return half + LABEL_Y_OFFSET;
 }
 
 function renderShape(
@@ -324,7 +323,7 @@ function OncologyGlyph(props: {
       )}
       {proband && (
         <polygon
-          points={`${-half - 14},${half + 14} ${-half - 4},${half + 4} ${-half - 6},${half + 14}`}
+          points={`${-half - 14},${half + 8} ${-half - 4},${half - 2} ${-half - 6},${half + 8}`}
           fill={stroke}
         />
       )}
@@ -332,7 +331,7 @@ function OncologyGlyph(props: {
         lines={labelLines}
         maxWidth={labelMaxWidth}
         x={labelOffsetX}
-        y={getLabelBlockY(half, proband)}
+        y={getLabelBlockY(half)}
       />
     </g>
   );
